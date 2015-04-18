@@ -50,6 +50,18 @@ class TrackingAgent(captureAgents.CaptureAgent):
         "Changes the current strategy. Allows for an agent to adapt to the game"
         self.strategy = strat
 
+    def ourSide(self, gameState, position=None):
+        if position == None:
+            position = self.position
+
+        width = self.board.walls.width
+        midPoint = width / 2
+        side = range(midPoint) if self.red else range(midPoint, width)
+        return position[0] in side
+
+    def otherSide(self, gameState, position=None):
+        return not self.ourSide(gameState, position)
+
     def displayBeliefs(self, gameState):
             "Prints the belief distributions to the screen"
             dists = [None] * gameState.getNumAgents()

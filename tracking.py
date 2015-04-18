@@ -51,6 +51,10 @@ class MarginalParticleFilter:
             dist[t[self.opponents.index(ghost)]] += prob
         return dist
 
+    def getBeliefIterable(self):
+        "Returns an iterable of belief distributions for the adversaries"
+        return (self.getBeliefDistribution(i) for i in self.opponents)
+
 
 class ContestParticleFilter:
     """
