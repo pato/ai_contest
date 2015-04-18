@@ -1,16 +1,11 @@
 import random
 import itertools
-import types
 
 import util
-import capture
-import captureAgents
-import ghostAgents
-import pacman
 import game
 
 import board
-import particleFilter
+import tracking
 
 class Strategy:
     """
@@ -49,13 +44,13 @@ class Offensive(Strategy):
     def __call__(self, agent, gameState):
         "Naively chooses a food to eat"
         food = agent.getFood(gameState).asList()
-        
+
         # Make a distribution of food, so further food is unlikely
         foodProb = util.Counter({f: 1.0/agent.getMazeDistance(agent.position, f) for
             f in food })
         foodProb.normalize()
         dest = foodProb.argMax()
-        
+
         # Get possible successors
         return min(self.getPairs(agent, gameState),
                 key=lambda x: agent.getMazeDistance(x[1], dest))[0]

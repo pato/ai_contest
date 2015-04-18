@@ -13,9 +13,9 @@ class TrackingAgent(captureAgents.CaptureAgent):
     """
     This is the 'basic' agent. It implements tracking and intefaces with the
     factory, which supplies shared data structures like the board and other
-    agents. 
+    agents.
     """
-    
+
     def __init__(self, index, factory, debug=True):
         captureAgents.CaptureAgent.__init__(self, index)
         self.factory = factory
@@ -35,7 +35,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
         # Update the current position and beliefs
         self.position = gameState.getAgentPosition(self.index)
         self.tracker.observe(gameState)
-        
+
         # Select an action and update position
         action = self.strategy(self, gameState)
         self.position = game.Actions.getSuccessor(self.position,action)
@@ -43,7 +43,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
         # Write distributions to board for debugging
         if self.debug:
             self.displayBeliefs(gameState)
-        
+
         return action
 
     def setStrategy(self, strat):

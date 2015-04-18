@@ -37,7 +37,7 @@ class Factory(captureAgents.AgentFactory):
             self.init = True
             self.board.initialize(gameState)
             self.particleFilter.initialize(gameState, self.board.getLegal())
-            
+
             # Build the ghosts and add to particle filter
             oppIndex = agent.getOpponents(gameState)
             for g in oppIndex:

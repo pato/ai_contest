@@ -1,11 +1,9 @@
 import util
 import game
-from captureAgents import AgentFactory, CaptureAgent
-import ghostAgents
 import random
-from itertools import *
+import itertools
 
-# TODO: recognize board substructures 
+# TODO: recognize board substructures
 
 class Board:
     """
@@ -44,7 +42,7 @@ class Board:
         lr = self.legalRange
         self.dist = [ [0] * len(self.legal) for _ in lr ]
         self.dist = [ [ min(self.dist[i][j], self.dist[i][k] + self.dist[k][j])
-            for i in lr ] for k,j in product(lr,lr) ]
+            for i in lr ] for k,j in itertools.product(lr,lr) ]
 
     def areAdjacent(self, p, q):
         "Tests if two different points are adjacent"
@@ -53,14 +51,12 @@ class Board:
 
     def getLegal(self):
         return self.legal
-    
+
     def getLegalActions(self, position):
         act = ['North','South','East','West','Stop']
         adj = game.Actions.getLegalNeighbors(position, self.walls)
         return [x for x in act if game.Actions.getSuccessor(position, x) in adj]
-    
+
     def getDistance(self, p, q):
         "Compute the vertex index, and then distance"
         return self.dist[self.legalReverse[p]][self.legalReverse[q]]
-
-
