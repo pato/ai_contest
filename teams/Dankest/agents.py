@@ -36,6 +36,9 @@ class TrackingAgent(captureAgents.CaptureAgent):
         self.position = gameState.getAgentPosition(self.index)
         self.tracker.observe(gameState)
 
+        for o in range(gameState.getNumAgents()):
+            print gameState.getAgentState(o).getPosition()
+
         # Select an action and update position
         action = self.strategy(self, gameState)
         self.position = game.Actions.getSuccessor(self.position,action)
@@ -52,7 +55,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
     def ourSide(self, gameState, position=None):
         if position == None:
-            position = self.position
+            position = gameState.getAgentPosition(self.index)
 
         width = self.board.walls.width
         midPoint = width / 2

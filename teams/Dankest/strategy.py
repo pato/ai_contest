@@ -6,6 +6,7 @@ import game
 
 import board
 import tracking
+import feature
 
 class Strategy:
     """
@@ -93,67 +94,66 @@ class Feature(Strategy):
         bestActions = [a for a, v in zip(actions, values) if v == maxValue]
         return random.choice(bestActions)
 
-"""
-For many possible features such as food distance, ghost distance, etc. the
-feature can be objectively determined from the gameState and agent. Many of
-these features are also used in many different agents. Therefore, they are
-implemented as functions that can be used inside other strategies.
-"""
-
-def score(agent, successor, features=util.Counter()):
-    "Calculates the score"
-    features['score'] = agent.getScore(successor)
-    return features
-
-def foodDistance(agent, successor, features=util.Counter()):
-    "Calculates the distance to the closest food"
-    food = agent.getFood(successor).asList()
-    position = successor.getAgentPosition(agent.index)
-    closestFood = min(agent.getMazeDistance(position, f) for f in food)
-    features['foodDistance'] = closestFood
-    return features
-
-def ghostDistance(agent, successor, features=util.Counter()):
-    "Calculates the distance to the closest ghost"
-    ghosts = [ g.argMax() for g in agent.tracker.getBeliefIterable() ]
-    position = successor.getAgentPosition(agent.index)
-    dists = list(agent.getMazeDistance(position, g) for g in
-            itertools.ifilter(lambda p: agent.otherSide(successor, p), ghosts))
-    closestGhost = min(dists) if dists else 0.0
-
-    # The ghost distance only really makes sense if our agent is on the ghost's
-    # side. So, we return 0 if this is not true
-    features['ghostDistance'] = closestGhost * agent.otherSide(successor)
-    return features
-
-def pacmanDistance(agent, successor, features=util.Counter()):
-    "Calculates the distance to the closest pacman"
-    ghosts = [ g.argMax() for g in agent.tracker.getBeliefIterable() ]
-    position = successor.getAgentPosition(agent.index)
-    dists = list(agent.getMazeDistance(position, g) for g in
-            itertools.ifilter(lambda p: agent.ourSide(successor, p), ghosts))
-    closestPacman = min(dists) if dists else 0.0
-
-    # Similarly only really makes sense if our agent is can capture the pacman.
-    features['pacmanDistance'] = closestPacman * agent.ourSide(successor,position)
-    return features
-
 class Offensive(Feature):
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
 
         # The features that Offensive strategy considers
-        score(agent, successor, features)
-        foodDistance(agent, successor, features)
-        ghostDistance(agent, successor, features)
+        feature.score(agent, successor, features)
+        feature.ghostDistance(agent, successor, features)
+        #feature.
+        feature.bestFoodDistance(agent, successor, features)
+        feature.disperse(agent, successor, features)
+        
+        if action == 'Stop':
+            features['dontStop'] = 1.0
 
         # Return feature dictionary
         print action, features * self.getWeights(agent, gameState, action), features
         return features
 
     def getWeights(self, agent, gameState, action):
-        "foodDistance is the only feature"
-        return { 'score': 100.0,
-                 'foodDistance': -1.0,
-                 'ghostDistance': 1.0 }
+        "The weights for the agent"
+        
+        # TODO can we learn these efficiently somehow? They are kind of arbitrary
+        return {'score': 300.0,
+                'ghostDistance': 50.0, 
+                #'pacmanDistance': -10.0,
+                'disperse': 4.0,
+                'agentFoodDistance': -5.0,
+                'ghostFoodDistance': 4.0,
+                'dontStop': -10000000.0}
+
+class Defensive(Feature):
+    def getFeatures(self, agent, gameState, action):
+        features = util.Counter()
+        successor = Strategy.getSuccessor(agent, gameState, action)
+
+        # The features that Defensive strategy considers
+        feature.pacmanDistance(agent, successor, features)
+        feature.onDefense(agent, successor, features)
+        feature.disperse(agent, successor, features)
+        #feature.randomValue(agent, successor, features)
+
+        if action == 'Stop':
+            features['dontStop'] = 1.0
+
+        rev = game.Directions.REVERSE[
+                gameState.getAgentState(agent.index).configuration.direction]
+        if action == rev:
+            features['dontReverse'] = 1.0
+
+
+        # Return feature dictionary
+        print action, features * self.getWeights(agent, gameState, action), features
+        return features
+
+
+    def getWeights(self, agent, gameState, action):
+        return {'pacmanDistance': -100.0,
+                'onDefense': 10.0,
+                'disperse': 4.0,
+                'dontReverse': -500.0,
+                'random': 5.0,
+                'dontStop': -1000.0}

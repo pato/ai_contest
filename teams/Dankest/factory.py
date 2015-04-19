@@ -21,7 +21,7 @@ class Factory(captureAgents.AgentFactory):
         self.particleFilter = tracking.ContestParticleFilter()
         self.team, self.opponents = [], []
         self.init = False
-        self.strategies = [ strategy.Offensive, strategy.Offensive ]
+        self.strategies = [ strategy.Offensive, strategy.Defensive ]
 
     def getAgent(self, index):
         "Currently builds a BasicAgent"
