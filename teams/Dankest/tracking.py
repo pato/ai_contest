@@ -1,10 +1,11 @@
 from itertools import *
 import util
 import random
-import math
 # import busters
-import game
 import operator
+
+import game
+import capture
 
 # Replaces busters
 def getEmissionModel(gameState, noisy):
@@ -36,7 +37,7 @@ class MarginalParticleFilter:
 
     def elapseTime(self, gameState):
         "Elapses time for the previous ghost"
-        self.particleFilter.elapseTime(gameState, self.ghostIndex)
+        self.particleFilter.elapseTime(capture.GameState(gameState), self.ghostIndex)
 
     def observe(self, gameState):
         "Observes, and elapses time for the current pacman"
@@ -118,6 +119,9 @@ class ContestParticleFilter:
         self.ghostIndices.append(agent.index)
 
     def getJailPosition(self, i):
+        # Never actually seen this happen, so want to check why it might
+        print "Unobservable ghost"
+        raw_input()
         return (2 * i + 1, 1);
 
     def observeState(self, gameState, pacmanPosition, noisyDistances):
@@ -150,22 +154,21 @@ class ContestParticleFilter:
         a list, edited, and then converted back to a tuple. This is a common
         operation when placing a ghost in jail.
         """
-        #pacmanPosition = gameState.getPacmanPosition()
-        #noisyDistances = gameState.getNoisyGhostDistances()
         if len(noisyDistances) < self.numGhosts:
             return
+        positions = [ gameState.getAgentPosition(i) for i in self.ghostIndices ]
         emissionModels = [ getEmissionModel(gameState, dist) for dist in
                 noisyDistances ]
         allPossible = util.Counter()
 
         for p in self.particles:
             # Compute the new particle by updating jailed ghosts
-            p = tuple(self.getJailPosition(g) if noisyDistances[g] is None
-                    else p[g] for g in range(self.numGhosts))
-
+            p = tuple(positions[g] if positions[g] is not None else p[g]
+                    for g in range(self.numGhosts))
+            
             # A generator that returns probabilities for non-jailed ghosts
             gen = (emissionModels[g](util.manhattanDistance(p[g],pacmanPosition))
-                    for g in range(self.numGhosts) if noisyDistances[g] != None)
+                    for g in range(self.numGhosts) if positions[g] == None)
 
             # Take the product of the ghost products and update the distribution
             prod = reduce(operator.mul, gen, 1.0)
@@ -181,15 +184,6 @@ class ContestParticleFilter:
             allPossible.normalize()
             self.particles = [ util.sample(allPossible) for p in
                     self.particles ]
-
-    def getParticleWithGhostInJail(self, particle, ghostIndex):
-        """
-        Takes a particle (as a tuple of ghost positions) and returns a particle
-        with the ghostIndex'th ghost in jail.
-        """
-        particle = list(particle)
-        particle[ghostIndex] = self.getJailPosition(ghostIndex)
-        return tuple(particle)
 
     def elapseTime(self, gameState, ghost):
         """
