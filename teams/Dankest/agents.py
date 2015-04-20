@@ -1,5 +1,6 @@
 import random
 import itertools
+import time
 
 import util
 import game
@@ -31,6 +32,8 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
     def chooseAction(self, gameState):
         "Updates belief distributions and calls a 'strategy'"
+        start = time.time()
+        
         # Update the current position and beliefs
         self.position = gameState.getAgentPosition(self.index)
         self.tracker.observe(gameState)
@@ -39,8 +42,10 @@ class TrackingAgent(captureAgents.CaptureAgent):
         action = self.strategy(self, gameState)
         self.position = game.Actions.getSuccessor(self.position,action)
 
-        # Write distributions to board for debugging
+        # Write distributions to board for debugging and time
         if self.debug:
+            if not isinstance(self, StrategicGhost):
+                print 'eval time for agent %d: %.4f' % (self.index, time.time()-start)
             self.displayBeliefs(gameState)
 
         return action
@@ -92,6 +97,15 @@ class StrategicGhost(TrackingAgent):
         self.team = factory.opponents
         self.opponents = factory.team
         self.prob = float(prob)
+        self.defense = 0.0
+        self.offense = 0.0
+       
+        self.strategies = { 'off': strategy.Offensive(),
+                            'def': strategy.Defensive(),
+                            'rnd': strategy.Random() }
+
+        # TODO determine appropriate value
+        self.delta = 10.0
 
     def getPosition():
         # So, this is somewhat convoluted, but here is why this works:
@@ -104,6 +118,27 @@ class StrategicGhost(TrackingAgent):
         # position are made via the belief distribution provided by the tracker.
         
         return self.gameState.getPosition(self.index)
+
+    def updateStrategy(self, gameState):
+        """
+        The ghost agents adjust their behavior based on how we believe they are
+        moving. As it stands, we determine which side of the board they spend
+        most of their time on; if it is their side, then they are defensive.
+        Otherwise, they are offensive. Called from elapseTime.
+        """
+        pos = self.tracker.getBeliefDistribution(self.index).argMax()
+        self.defense += self.ourSide(gameState, pos)
+        self.offense += self.otherSide(gameState, pos)
+        diff = self.defense - self.offense
+
+        # We only change behavior
+        if diff < -self.delta:
+            self.strategy = self.strategies['def']
+        elif diff > self.delta:
+            self.strategy = self.strategies['off']
+        else:
+            # If there is no clear pattern, assume random
+            self.strategy = self.strategies['rnd']
 
     def getDistribution(self, gameState):
         """

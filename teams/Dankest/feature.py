@@ -113,3 +113,19 @@ def randomValue(agent, successor, features=util.Counter()):
     """
     features['random'] = random.random()
     return features
+
+def invaderDistance(agent, successor, features=util.Counter()):
+    """
+    Computes the number of invaders, as well as the distance to the closest
+    invader. This is useful for simulating the baseline defensive agent. Note,
+    it does not use estimated distances.
+    """
+    enemies = [successor.getAgentState(i) for i in agent.getOpponents(successor)]
+    invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+    features['numInvaders'] = len(invaders)
+    if len(invaders) > 0:
+      dists = [agent.getMazeDistance(successor.getAgentPosition(agent.index),
+          a.getPosition()) for a in invaders]
+      features['invaderDistance'] = min(dists)
+    return features
+

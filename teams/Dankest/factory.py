@@ -18,7 +18,7 @@ class Factory(captureAgents.AgentFactory):
     def __init__(self, isRed, **args):
         captureAgents.AgentFactory.__init__(self,isRed)
         self.board = board.Board()
-        self.particleFilter = tracking.ContestParticleFilter(isRed)
+        self.particleFilter = tracking.ContestParticleFilter(isRed, 100)
         self.team, self.opponents = [], []
         self.init = False
         
@@ -26,6 +26,8 @@ class Factory(captureAgents.AgentFactory):
         # better? i.e. Instead of specifying individual agents, specify
         # something like strategy.Balanced, Aggressive, etc.?
         self.strategies = [getattr(strategy, v) for v in args.values()]
+        self.ghostStrategies = [ strategy.BaselineDefensive,
+                strategy.BaselineOffensive ]
 
     def getAgent(self, index):
         "Currently builds a BasicAgent"
@@ -45,9 +47,9 @@ class Factory(captureAgents.AgentFactory):
             # Build the ghosts and add to particle filter
             oppIndex = agent.getOpponents(gameState)
             for g in oppIndex:
-                ghost = agents.StrategicGhost(g, self, 1.0)
+                ghost = agents.StrategicGhost(g, self, 0.5)
                 ghost.registerInitialState(gameState)
-                ghost.strategy = strategy.BaselineOffensive()
+                ghost.strategy = self.ghostStrategies.pop()()
                 ghost.tracker = tracking.GhostTracker(
                         self.particleFilter, gameState, ghost)
                 self.opponents.append(ghost)

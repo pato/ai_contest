@@ -169,3 +169,25 @@ class BaselineOffensive(Feature):
     def getWeights(self, agent, gameState, action):
         return {'score': 100,
                 'foodDistance' : -1}
+
+class BaselineDefensive(Feature):
+    def getFeatures(self, agent, gameState, action):
+        features = util.Counter()
+        successor = Strategy.getSuccessor(agent, gameState, action)
+
+        feature.onDefense(agent, gameState, features)
+        feature.invaderDistance(agent, gameState, features)
+        
+        if action == game.Directions.STOP: features['stop'] = 1
+        rev = game.Directions.REVERSE[gameState.getAgentState(agent.index).configuration.direction]
+        if action == rev: features['reverse'] = 1
+
+        return features
+
+    def getWeights(self, agent, gameState, action):
+        return {'numInvaders': -1000,
+                'onDefense': 100,
+                'invaderDistance': -10,
+                'stop': -100,
+                'reverse': -2}
+

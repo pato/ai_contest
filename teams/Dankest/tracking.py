@@ -23,6 +23,7 @@ class Tracker:
         self.agent = agent
         self.index = agent.index
         self.particleFilter = particleFilter
+        self.team = self.agent.getTeam(gameState)
         self.opponents = self.agent.getOpponents(gameState)
 
         # Calculate the opponent who goes before the agent
@@ -38,6 +39,7 @@ class Tracker:
     def elapseTime(self, gameState):
         "Elapses time for the previous ghost"
         self.particleFilter.elapseTime(capture.GameState(gameState), self.ghostIndex)
+        self.agent.opponents[self.ghostIndex].updateStrategy(gameState)
 
     def observe(self, gameState):
         "Observes, and elapses time for the current pacman"
@@ -66,10 +68,17 @@ class GhostTracker(Tracker):
         self.gameState = gameState
     
     def getBeliefDistribution(self, ghost):
-        "Will only ever be queried for the agents"
-        dist = util.Counter()
-        dist[self.gameState.getAgentPosition(ghost)] = 1.0
-        return dist
+        "Supports querying for both agents and ghosts"
+        if ghost in self.opponents:
+            dist = util.Counter()
+            dist[self.gameState.getAgentPosition(ghost)] = 1.0
+            return dist
+        else:
+            jointDistribution = self.particleFilter.getBeliefDistribution()
+            dist = util.Counter()
+            for t, prob in jointDistribution.items():
+                dist[t[self.team.index(ghost)]] += prob
+            return dist
 
 class ContestParticleFilter:
     """
@@ -98,10 +107,13 @@ class ContestParticleFilter:
         else:
             self.ghostIndices = gameState.getBlueTeamIndices()
         
+        # Set the positions and a uniform prior
         self.legalPositions = legalPositions
+        self.uniformPrior = util.Counter(dict.fromkeys(legalPositions, 1.0))
+        self.uniformPrior.normalize()
+        
+        # Place all particles at the start state
         self.resetParticles(gameState)
-
-        # Must call initializeParticles *after* all the ghosts are added
 
     def resetParticles(self, gameState, ghost=None):
         """
@@ -144,11 +156,10 @@ class ContestParticleFilter:
         weight with each position) is incorrect and may produce errors.
         """
         # Cartesian product of positions of all ghosts
-        ghosts = list(product(*repeat(self.legalPositions, self.numGhosts)))
-        random.shuffle(ghosts)
-
-        # Now take the first numParticles
-        self.particles = list(islice(cycle(ghosts), self.numParticles))
+        self.particles = []
+        for i in range(self.numParticles):
+            self.particles.append(tuple(util.sample(self.uniformPrior) for _ in
+                    range(self.numGhosts)))
 
     def addGhostAgent(self, agent):
         """
@@ -193,7 +204,15 @@ class ContestParticleFilter:
         positions = [ gameState.getAgentPosition(i) for i in self.ghostIndices ]
         emissionModels = [ getEmissionModel(gameState, dist) for dist in
                 noisyDistances ]
+        
+        # The distribution over states (tuples of ghost locations)
         allPossible = util.Counter()
+
+        # The distributions for each ghost
+        #marginals = [ util.Counter() for _ in range(self.numGhosts) ]
+        
+        # The prior
+        prior = self.getBeliefDistribution()
 
         for p in self.particles:
             # All ghosts that are visible, we set specifically
@@ -203,18 +222,34 @@ class ContestParticleFilter:
             # A generator that returns probabilities for non-jailed ghosts
             gen = (emissionModels[g](util.manhattanDistance(p[g],pacmanPosition))
                     for g in range(self.numGhosts) if positions[g] == None)
+        
+            # Calculate the marginal distributions for each ghost
+            #for c, g in zip(marginals, gen):
+            #    c[p] += g
 
             # Take the product of the ghost products and update the distribution
             prod = reduce(operator.mul, gen, 1.0)
-
             allPossible[p] += prod
 
+        # For any ghosts that have zero probability, resample them
+        #for c in ifilterfalse(any, marginals):
+        #    print "It's happening!!!!"
+        #    raw_input()
+        #    c = self.uniformPrior
+
+        # Compute the intersection of positions and take the product
+        #locations = reduce(operator.and_, map(dict.viewkeys, marginals))
+        #for p in locations:
+        #    gen = (marginals[g][p] for g in range(self.numGhosts))
+        #    allPossible[p] = reduce(operator.mul,gen,1.0)
+        
+        # If nothing works, then resample everything
+        #print allPossible
         if not any(allPossible.values()):
             self.resampleParticles(gameState)
         else:
             allPossible.normalize()
-            self.particles = [ util.sample(allPossible) for p in
-                    self.particles ]
+            self.particles = [ util.sample(allPossible) for p in self.particles ]
 
     def elapseTime(self, gameState, ghost):
         """
@@ -272,7 +307,7 @@ class ContestParticleFilter:
             newParticle[ghost] = util.sample(newPosDist)
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
-
+        
     def getBeliefDistribution(self):
         dist = util.Counter()
         for p in self.particles:
