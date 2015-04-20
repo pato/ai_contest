@@ -12,7 +12,7 @@ def getEmissionModel(gameState, noisy):
     "Used to calculate P(noisy | true)"
     return lambda true: gameState.getDistanceProb(true, noisy)
 
-class MarginalParticleFilter:
+class Tracker:
     """
     Used to interact with the actual contest particle filter. Basically
     represents the filter for a single ghost. Useful primarily for calculating
@@ -56,6 +56,20 @@ class MarginalParticleFilter:
         "Returns an iterable of belief distributions for the adversaries"
         return (self.getBeliefDistribution(i) for i in self.opponents)
 
+class GhostTracker(Tracker):
+    """
+    This is a tracker for use by the ghost agents, *not* for tracking the
+    ghosts. This is an important distinction. It does not record observations,
+    and is necessary for interfacing with strategies.
+    """
+    def observe(self, gameState):
+        self.gameState = gameState
+    
+    def getBeliefDistribution(self, ghost):
+        "Will only ever be queried for the agents"
+        dist = util.Counter()
+        dist[self.gameState.getAgentPosition(ghost)] = 1.0
+        return dist
 
 class ContestParticleFilter:
     """

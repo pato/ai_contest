@@ -110,7 +110,7 @@ class Offensive(Feature):
             features['dontStop'] = 1.0
 
         # Return feature dictionary
-        print action, features * self.getWeights(agent, gameState, action), features
+        #print action, features * self.getWeights(agent, gameState, action), features
         return features
 
     def getWeights(self, agent, gameState, action):
@@ -146,7 +146,7 @@ class Defensive(Feature):
 
 
         # Return feature dictionary
-        print action, features * self.getWeights(agent, gameState, action), features
+        #print action, features * self.getWeights(agent, gameState, action), features
         return features
 
 
@@ -157,3 +157,15 @@ class Defensive(Feature):
                 'dontReverse': -500.0,
                 'random': 5.0,
                 'dontStop': -1000.0}
+
+class BaselineOffensive(Feature):
+    def getFeatures(self, agent, gameState, action):
+        features = util.Counter()
+        successor = Strategy.getSuccessor(agent, gameState, action)
+        feature.score(agent, successor, features)
+        feature.foodDistance(agent, successor, features)
+        return features
+
+    def getWeights(self, agent, gameState, action):
+        return {'score': 100,
+                'foodDistance' : -1}

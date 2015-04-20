@@ -15,7 +15,6 @@ class TrackingAgent(captureAgents.CaptureAgent):
     factory, which supplies shared data structures like the board and other
     agents.
     """
-
     def __init__(self, index, factory, debug=True):
         captureAgents.CaptureAgent.__init__(self, index)
         self.factory = factory
@@ -36,9 +35,6 @@ class TrackingAgent(captureAgents.CaptureAgent):
         self.position = gameState.getAgentPosition(self.index)
         self.tracker.observe(gameState)
 
-        for o in range(gameState.getNumAgents()):
-            print gameState.getAgentState(o).getPosition()
-
         # Select an action and update position
         action = self.strategy(self, gameState)
         self.position = game.Actions.getSuccessor(self.position,action)
@@ -52,6 +48,12 @@ class TrackingAgent(captureAgents.CaptureAgent):
     def setStrategy(self, strat):
         "Changes the current strategy. Allows for an agent to adapt to the game"
         self.strategy = strat
+
+    def getPosition(self):
+        return self.position
+
+    def getIndex(self):
+        return self.index
 
     def ourSide(self, gameState, position=None):
         "Tests if a position is on our side"
@@ -79,15 +81,29 @@ class TrackingAgent(captureAgents.CaptureAgent):
                 dists[a] = self.tracker.getBeliefDistribution(a)
             self.displayDistributionsOverPositions(dists)
 
-def StrategicGhost(TrackingAgent):
+class StrategicGhost(TrackingAgent):
     """
     In order to simulate opponents, we need to have some idea of how they move.
     Therefore, instead of rewriting AI's, we can use our prebuilt strategies to
     simulate the opponents. 
     """
-    def __init__(self, index, factory, prob, debug=True):
-        TrackingGhost.__init__(self, index, factory, debug)
+    def __init__(self, index, factory, prob=0.8, debug=True):
+        TrackingAgent.__init__(self, index, factory, debug=False)
+        self.team = factory.opponents
+        self.opponents = factory.team
         self.prob = float(prob)
+
+    def getPosition():
+        # So, this is somewhat convoluted, but here is why this works:
+        # 
+        # The only time this is called is inside of a call to a strategy, which
+        # must occur inside of a call to self.chooseAction, which must occur
+        # inside of self.getDistribution. The getDistribution function is called
+        # *only* inside of the tracker, in particular elapseTime. This function
+        # sets the agents position first. All other calls to the opponents
+        # position are made via the belief distribution provided by the tracker.
+        
+        return self.gameState.getPosition(self.index)
 
     def getDistribution(self, gameState):
         """
@@ -95,8 +111,8 @@ def StrategicGhost(TrackingAgent):
         movement with probability self.prob. Other movements are uniformly
         selected from the remaining probability.
         """
-        action = self.chooseAction(self, gameState)
-        legal = self.getLegalActions(self.index)
+        action = self.chooseAction(gameState)
+        legal = gameState.getLegalActions(self.index)
         p = (1.0 - self.prob) / (len(legal) - 1.0)
         
         # Return distribution over legal actions

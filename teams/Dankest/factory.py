@@ -45,13 +45,19 @@ class Factory(captureAgents.AgentFactory):
             # Build the ghosts and add to particle filter
             oppIndex = agent.getOpponents(gameState)
             for g in oppIndex:
-                ghost = ghostAgents.RandomGhost(g)
+                ghost = agents.StrategicGhost(g, self, 1.0)
+                ghost.registerInitialState(gameState)
+                ghost.strategy = strategy.BaselineOffensive()
+                ghost.tracker = tracking.GhostTracker(
+                        self.particleFilter, gameState, ghost)
+                self.opponents.append(ghost)
                 self.particleFilter.addGhostAgent(ghost)
 
         # Create the marginal particle filter for the agent
-        agent.tracker = tracking.MarginalParticleFilter(
+        agent.tracker = tracking.Tracker(
                 self.particleFilter, gameState, agent)
 
         # Set the agent's strategy.
-        current = self.strategies.pop()
-        agent.setStrategy(current())
+        if agent.index in map(agents.TrackingAgent.getIndex, self.team):
+            current = self.strategies.pop()
+            agent.setStrategy(current())
