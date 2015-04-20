@@ -54,6 +54,9 @@ class TrackingAgent(captureAgents.CaptureAgent):
         self.strategy = strat
 
     def ourSide(self, gameState, position=None):
+        "Tests if a position is on our side"
+
+        # TODO use gameState.agentStates[i].isPacman instead
         if position == None:
             position = gameState.getAgentPosition(self.index)
 
@@ -75,3 +78,26 @@ class TrackingAgent(captureAgents.CaptureAgent):
             for a in self.getOpponents(gameState):
                 dists[a] = self.tracker.getBeliefDistribution(a)
             self.displayDistributionsOverPositions(dists)
+
+def StrategicGhost(TrackingAgent):
+    """
+    In order to simulate opponents, we need to have some idea of how they move.
+    Therefore, instead of rewriting AI's, we can use our prebuilt strategies to
+    simulate the opponents. 
+    """
+    def __init__(self, index, factory, prob, debug=True):
+        TrackingGhost.__init__(self, index, factory, debug)
+        self.prob = float(prob)
+
+    def getDistribution(self, gameState):
+        """
+        Uses the regular agent to select the movement, and then engages that
+        movement with probability self.prob. Other movements are uniformly
+        selected from the remaining probability.
+        """
+        action = self.chooseAction(self, gameState)
+        legal = self.getLegalActions(self.index)
+        p = (1.0 - self.prob) / (len(legal) - 1.0)
+        
+        # Return distribution over legal actions
+        return util.Counter({a: p if a != action else self.prob for a in legal})

@@ -66,7 +66,8 @@ class ContestParticleFilter:
     JointParticleFilter.
     """
 
-    def __init__(self, numParticles=600):
+    def __init__(self, isRed, numParticles=600):
+        self.isRed = isRed
         self.setNumParticles(numParticles)
 
     def setNumParticles(self, numParticles):
@@ -76,11 +77,38 @@ class ContestParticleFilter:
         "Stores information about the game, then initializes particles."
         self.numGhosts = gameState.getNumAgents() / 2
         self.ghostAgents = []
-        self.ghostIndices = []
+        
+        # Sets the ghost indices so that we can initialize the particles
+        if not self.isRed:
+            self.ghostIndices = gameState.getRedTeamIndices()
+        else:
+            self.ghostIndices = gameState.getBlueTeamIndices()
+        
         self.legalPositions = legalPositions
-        self.initializeParticles(gameState)
+        self.resetParticles(gameState)
 
-    def initializeParticles(self, gameState):
+        # Must call initializeParticles *after* all the ghosts are added
+
+    def resetParticles(self, gameState, ghost=None):
+        """
+        This places the ghost given by ghost into its starting state. This is
+        useful, for example, at the start of a match. However, I allow the ghost
+        to be specified so that when a ghost is captured, it is set back to the
+        starting state.
+        """
+        # Particle with all ghosts in start state
+        if not getattr(self, 'particles', []):
+            p = tuple(gameState.getInitialAgentPosition(g) for g in
+                    self.ghostIndices)
+            self.particles = [p] * self.numGhosts
+        else:
+            for p in self.particles:
+                positions = list(p)
+                positions[self.ghostIndices.index(ghost)] = \
+                        gameState.getInitialAgentPosition(ghost)
+                p = tuple(positions)
+
+    def resampleParticles(self, gameState):
         """
         Initialize particles to be consistent with a uniform prior.
 
@@ -101,8 +129,6 @@ class ContestParticleFilter:
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        #TODO use starting state?
-
         # Cartesian product of positions of all ghosts
         ghosts = list(product(*repeat(self.legalPositions, self.numGhosts)))
         random.shuffle(ghosts)
@@ -117,12 +143,6 @@ class ContestParticleFilter:
         """
         self.ghostAgents.append(agent)
         self.ghostIndices.append(agent.index)
-
-    def getJailPosition(self, i):
-        # Never actually seen this happen, so want to check why it might
-        print "Unobservable ghost"
-        raw_input()
-        return (2 * i + 1, 1);
 
     def observeState(self, gameState, pacmanPosition, noisyDistances):
 
@@ -162,7 +182,7 @@ class ContestParticleFilter:
         allPossible = util.Counter()
 
         for p in self.particles:
-            # Compute the new particle by updating jailed ghosts
+            # All ghosts that are visible, we set specifically
             p = tuple(positions[g] if positions[g] is not None else p[g]
                     for g in range(self.numGhosts))
             
@@ -176,10 +196,7 @@ class ContestParticleFilter:
             allPossible[p] += prod
 
         if not any(allPossible.values()):
-            self.initializeParticles(gameState)
-            for p in self.particles:
-                p = tuple(self.getJailPosition(g) if noisyDistances[g] is None
-                        else p[g] for g in range(self.numGhosts))
+            self.resampleParticles(gameState)
         else:
             allPossible.normalize()
             self.particles = [ util.sample(allPossible) for p in
