@@ -15,13 +15,17 @@ class Factory(captureAgents.AgentFactory):
     particle filter for tracking the other team, as well an array of agents
     which is used for our agents to communicate amoungst themselves.
     """
-    def __init__(self, isRed):
+    def __init__(self, isRed, **args):
         captureAgents.AgentFactory.__init__(self,isRed)
         self.board = board.Board()
-        self.particleFilter = tracking.ContestParticleFilter()
+        self.particleFilter = tracking.ContestParticleFilter(isRed)
         self.team, self.opponents = [], []
         self.init = False
-        self.strategies = [ strategy.Offensive, strategy.Defensive ]
+        
+        # Allow for more robust configurations, or configurations that scale
+        # better? i.e. Instead of specifying individual agents, specify
+        # something like strategy.Balanced, Aggressive, etc.?
+        self.strategies = [getattr(strategy, v) for v in args.values()]
 
     def getAgent(self, index):
         "Currently builds a BasicAgent"
