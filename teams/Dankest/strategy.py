@@ -104,7 +104,7 @@ class Adaptive(Feature):
     def __init__(self, first, second):
         self.first = first
         self.second = second
-    
+
     def __call__(self, agent, gameState):
         # TODO using the action stop is a little hacky, but is necessary to get
         # the current state to be evaluated. Fix?
@@ -126,7 +126,7 @@ class Offensive(Feature):
         #feature.
         feature.bestFoodDistance(agent, successor, features)
         feature.disperse(agent, successor, features)
-        
+
         if action == 'Stop':
             features['dontStop'] = 1.0
 
@@ -136,10 +136,10 @@ class Offensive(Feature):
 
     def getWeights(self, agent, gameState, action):
         "The weights for the agent"
-        
+
         # TODO can we learn these efficiently somehow? They are kind of arbitrary
         return {'score': 300.0,
-                'ghostDistance': 50.0, 
+                'ghostDistance': 50.0,
                 #'pacmanDistance': -10.0,
                 'disperse': 4.0,
                 'agentFoodDistance': -5.0,
@@ -197,7 +197,7 @@ class BaselineDefensive(Feature):
 
         feature.onDefense(agent, gameState, features)
         feature.invaderDistance(agent, gameState, features)
-        
+
         if action == game.Directions.STOP: features['stop'] = 1
         rev = game.Directions.REVERSE[gameState.getAgentState(agent.index).configuration.direction]
         if action == rev: features['reverse'] = 1
@@ -223,7 +223,7 @@ class BaselineAdaptive(Adaptive):
         # If positive, then be offensive. If negative, then be defensive
         self.first = BaselineDefensive()
         self.second = BaselineOffensive()
-    
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)

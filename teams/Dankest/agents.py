@@ -33,7 +33,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
     def chooseAction(self, gameState):
         "Updates belief distributions and calls a 'strategy'"
         start = time.time()
-        
+
         # Update the current position and beliefs
         self.position = gameState.getAgentPosition(self.index)
         self.tracker.observe(gameState)
@@ -90,7 +90,7 @@ class StrategicGhost(TrackingAgent):
     """
     In order to simulate opponents, we need to have some idea of how they move.
     Therefore, instead of rewriting AI's, we can use our prebuilt strategies to
-    simulate the opponents. 
+    simulate the opponents.
     """
     def __init__(self, index, factory, prob=0.8, debug=True):
         TrackingAgent.__init__(self, index, factory, debug=False)
@@ -100,14 +100,14 @@ class StrategicGhost(TrackingAgent):
 
     def getPosition():
         # So, this is somewhat convoluted, but here is why this works:
-        # 
+        #
         # The only time this is called is inside of a call to a strategy, which
         # must occur inside of a call to self.chooseAction, which must occur
         # inside of self.getDistribution. The getDistribution function is called
         # *only* inside of the tracker, in particular elapseTime. This function
         # sets the agents position first. All other calls to the opponents
         # position are made via the belief distribution provided by the tracker.
-        
+
         return self.gameState.getPosition(self.index)
 
     def getDistribution(self, gameState):
@@ -119,6 +119,6 @@ class StrategicGhost(TrackingAgent):
         action = self.chooseAction(gameState)
         legal = gameState.getLegalActions(self.index)
         p = (1.0 - self.prob) / (len(legal) - 1.0)
-        
+
         # Return distribution over legal actions
         return util.Counter({a: p if a != action else self.prob for a in legal})

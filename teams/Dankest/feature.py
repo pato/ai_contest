@@ -70,12 +70,12 @@ def bestFoodDistance(agent, successor, features=util.Counter()):
     the ghost to that food.
     """
     ghosts = [ g.argMax() for g in agent.tracker.getBeliefIterable() ]
-    
+
     # Get the distances to each of the food for the agent and the ghosts
     agentDistances = getFoodDistances(agent, successor,
             successor.getAgentPosition(agent.index))
     ghostDistances = [ getFoodDistances(agent, successor, g) for g in ghosts ]
-    
+
     # Find the ghost that is closest
     closestGhostDistances = map(min, zip(*ghostDistances))
 

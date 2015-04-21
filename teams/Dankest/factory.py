@@ -18,10 +18,10 @@ class Factory(captureAgents.AgentFactory):
     def __init__(self, isRed, **args):
         captureAgents.AgentFactory.__init__(self,isRed)
         self.board = board.Board()
-        self.particleFilter = tracking.ContestParticleFilter(isRed, 100)
+        self.particleFilter = tracking.ContestParticleFilter(isRed, 300)
         self.team, self.opponents = [], []
         self.init = False
-        
+
         # Allow for more robust configurations, or configurations that scale
         # better? i.e. Instead of specifying individual agents, specify
         # something like strategy.Balanced, Aggressive, etc.?

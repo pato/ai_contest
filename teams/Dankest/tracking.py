@@ -65,7 +65,7 @@ class GhostTracker(Tracker):
     """
     def observe(self, gameState):
         self.gameState = gameState
-    
+
     def getBeliefDistribution(self, ghost):
         "Supports querying for both agents and ghosts"
         if ghost in self.opponents:
@@ -99,18 +99,18 @@ class ContestParticleFilter:
         "Stores information about the game, then initializes particles."
         self.numGhosts = gameState.getNumAgents() / 2
         self.ghostAgents = []
-        
+
         # Sets the ghost indices so that we can initialize the particles
         if not self.isRed:
             self.ghostIndices = gameState.getRedTeamIndices()
         else:
             self.ghostIndices = gameState.getBlueTeamIndices()
-        
+
         # Set the positions and a uniform prior
         self.legalPositions = legalPositions
         self.uniformPrior = util.Counter(dict.fromkeys(legalPositions, 1.0))
         self.uniformPrior.normalize()
-        
+
         # Place all particles at the start state
         self.resetParticles(gameState)
 
@@ -154,11 +154,10 @@ class ContestParticleFilter:
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        # Cartesian product of positions of all ghosts
         self.particles = []
         for i in range(self.numParticles):
             self.particles.append(tuple(util.sample(self.uniformPrior) for _ in
-                    range(self.numGhosts)))
+                    self.ghostIndices))
 
     def addGhostAgent(self, agent):
         """
@@ -166,7 +165,6 @@ class ContestParticleFilter:
         different).
         """
         self.ghostAgents.append(agent)
-        self.ghostIndices.append(agent.index)
 
     def observeState(self, gameState, pacmanPosition, noisyDistances):
 
@@ -203,25 +201,19 @@ class ContestParticleFilter:
         positions = [ gameState.getAgentPosition(i) for i in self.ghostIndices ]
         emissionModels = [ getEmissionModel(gameState, dist) for dist in
                 noisyDistances ]
-        
+
         # The distribution over states (tuples of ghost locations)
         allPossible = util.Counter()
-
-        # The distributions for each ghost
-        #marginals = [ util.Counter() for _ in range(self.numGhosts) ]
-        
-        # The prior
-        prior = self.getBeliefDistribution()
 
         for p in self.particles:
             # All ghosts that are visible, we set specifically
             p = tuple(positions[g] if positions[g] is not None else p[g]
                     for g in range(self.numGhosts))
-            
+
             # A generator that returns probabilities for non-jailed ghosts
             gen = (emissionModels[g](util.manhattanDistance(p[g],pacmanPosition))
                     for g in range(self.numGhosts) if positions[g] == None)
-        
+
             # Calculate the marginal distributions for each ghost
             #for c, g in zip(marginals, gen):
             #    c[p] += g
@@ -230,22 +222,12 @@ class ContestParticleFilter:
             prod = reduce(operator.mul, gen, 1.0)
             allPossible[p] += prod
 
-        # For any ghosts that have zero probability, resample them
-        #for c in ifilterfalse(any, marginals):
-        #    print "It's happening!!!!"
-        #    raw_input()
-        #    c = self.uniformPrior
-
-        # Compute the intersection of positions and take the product
-        #locations = reduce(operator.and_, map(dict.viewkeys, marginals))
-        #for p in locations:
-        #    gen = (marginals[g][p] for g in range(self.numGhosts))
-        #    allPossible[p] = reduce(operator.mul,gen,1.0)
-        
         # If nothing works, then resample everything
         #print allPossible
         if not any(allPossible.values()):
             self.resampleParticles(gameState)
+            self.particles = [tuple(positions[g] if positions[g] is not None else p[g]
+                for g in range(self.numGhosts)) for p in self.particles]
         else:
             allPossible.normalize()
             self.particles = [ util.sample(allPossible) for p in self.particles ]
@@ -306,7 +288,7 @@ class ContestParticleFilter:
             newParticle[ghost] = util.sample(newPosDist)
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
-        
+
     def getBeliefDistribution(self):
         dist = util.Counter()
         for p in self.particles:
