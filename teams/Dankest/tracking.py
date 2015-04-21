@@ -39,7 +39,6 @@ class Tracker:
     def elapseTime(self, gameState):
         "Elapses time for the previous ghost"
         self.particleFilter.elapseTime(capture.GameState(gameState), self.ghostIndex)
-        self.agent.opponents[self.ghostIndex].updateStrategy(gameState)
 
     def observe(self, gameState):
         "Observes, and elapses time for the current pacman"

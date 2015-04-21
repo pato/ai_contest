@@ -94,6 +94,27 @@ class Feature(Strategy):
         bestActions = [a for a, v in zip(actions, values) if v == maxValue]
         return random.choice(bestActions)
 
+class Adaptive(Feature):
+    """
+    Calculates a linear combination of features, and then based on the output
+    chooses which of two strategies to use. This is useful especially for
+    modelling the enemy ghosts, but might also be useful for our own agents at
+    some point.
+    """
+    def __init__(self, first, second):
+        self.first = first
+        self.second = second
+    
+    def __call__(self, agent, gameState):
+        # TODO using the action stop is a little hacky, but is necessary to get
+        # the current state to be evaluated. Fix?
+        current = self.evaluate(agent, gameState, 'Stop')
+        if current < 0:
+            return self.first(agent, gameState)
+        else:
+            return self.second(agent, gameState)
+
+
 class Offensive(Feature):
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
@@ -151,12 +172,11 @@ class Defensive(Feature):
 
 
     def getWeights(self, agent, gameState, action):
-        return {'pacmanDistance': -100.0,
-                'onDefense': 10.0,
+        return {'pacmanDistance': -50.0,
+                'onDefense': 100.0,
                 'disperse': 4.0,
-                'dontReverse': -500.0,
-                'random': 5.0,
-                'dontStop': -1000.0}
+                'dontReverse': -8.0,
+                'dontStop': -100.0}
 
 class BaselineOffensive(Feature):
     def getFeatures(self, agent, gameState, action):
@@ -190,4 +210,31 @@ class BaselineDefensive(Feature):
                 'invaderDistance': -10,
                 'stop': -100,
                 'reverse': -2}
+
+class BaselineAdaptive(Adaptive):
+    """
+    Chooses whether to be offensive or defensive based on features related to
+    the agents current position, as well as features that depend on the agents
+    previous position. This can be optimized just like the other feature based
+    strategies. However, we can also do supervised learning by having it
+    classify the play style of one of our agents.
+    """
+    def __init__(self):
+        # If positive, then be offensive. If negative, then be defensive
+        self.first = BaselineDefensive()
+        self.second = BaselineOffensive()
+    
+    def getFeatures(self, agent, gameState, action):
+        features = util.Counter()
+        successor = Strategy.getSuccessor(agent, gameState, action)
+
+        # TODO Right now, we just use the agent's board location. We should probably
+        # also use the agent's move history.
+        feature.onDefense(agent, successor, features)
+        features['bias'] = 1.0
+
+        return features
+
+    def getWeights(self, agent, gameState, action):
+        return { 'onDefense': -1 }
 

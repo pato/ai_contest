@@ -26,8 +26,8 @@ class Factory(captureAgents.AgentFactory):
         # better? i.e. Instead of specifying individual agents, specify
         # something like strategy.Balanced, Aggressive, etc.?
         self.strategies = [getattr(strategy, v) for v in args.values()]
-        self.ghostStrategies = [ strategy.BaselineDefensive,
-                strategy.BaselineOffensive ]
+        self.ghostStrategies = [ strategy.BaselineAdaptive,
+                strategy.BaselineAdaptive ]
 
     def getAgent(self, index):
         "Currently builds a BasicAgent"
