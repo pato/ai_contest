@@ -360,17 +360,18 @@ class CaptureRules:
     if state.isOver():
       game.gameOver = True
       if not game.rules.quiet:
-        if state.getRedFood().count() == MIN_FOOD:
-          print 'The Blue team has captured all but %d of the opponents\' dots.' % MIN_FOOD
-        if state.getBlueFood().count() == MIN_FOOD:
-          print 'The Red team has captured all but %d of the opponents\' dots.' % MIN_FOOD
-        if state.getBlueFood().count() > MIN_FOOD and state.getRedFood().count() > MIN_FOOD:
-          print 'Time is up.'
-          if state.data.score == 0: print 'Tie game!'
-          else:
-            winner = 'Red'
-            if state.data.score < 0: winner = 'Blue'
-            print 'The %s team wins by %d points.' % (winner, abs(state.data.score))
+        print state.data.score
+        # if state.getRedFood().count() == MIN_FOOD:
+        #     print 'The Blue team has captured all but %d of the opponents\' dots.' % MIN_FOOD
+        # if state.getBlueFood().count() == MIN_FOOD:
+        #   print 'The Red team has captured all but %d of the opponents\' dots.' % MIN_FOOD
+        # if state.getBlueFood().count() > MIN_FOOD and state.getRedFood().count() > MIN_FOOD:
+        #   print 'Time is up.'
+        #   if state.data.score == 0: print 'Tie game!'
+        #   else:
+        #     winner = 'Red'
+        #     if state.data.score < 0: winner = 'Blue'
+        #     print 'The %s team wins by %d points.' % (winner, abs(state.data.score))
 
   def getProgress(self, game):
     blue = 1.0 - (game.state.getBlueFood().count() / float(self._initBlueFood))
