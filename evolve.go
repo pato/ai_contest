@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	const NUM_TRIALS = 8
+	const NUM_TRIALS = 1
 	var trials [NUM_TRIALS]map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
@@ -100,13 +100,20 @@ func trial(oweights map[string]float64, dweights map[string]float64, c chan int6
 
 	err = cmd.Start()
 	if err != nil {
+		log.Fatal("START FAILED")
 		log.Fatal(err)
 	}
-	//log.Printf("Waiting for game to finish...")
+	log.Printf("Waiting for game to finish...")
 	b := make([]byte, 2000)
 	n, err := io.ReadFull(stdout, b)
 	s := string(b[:n])
 	err = cmd.Wait()
+	if err != nil {
+		log.Fatal("WAIT FAILED")
+		log.Fatal(err)
+	}
+	log.Printf("Game ended...")
+	fmt.Println(s)
 
 	// Get the results
 	lines := strings.Split(s, "\n")
