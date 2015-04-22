@@ -97,7 +97,7 @@ func trial(oweights map[string]float64, dweights map[string]float64) (string, in
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Waiting for command to finish...")
+	log.Printf("Waiting for game to finish...")
 	b := make([]byte, 2000)
 	n, err := io.ReadFull(stdout, b)
 	s := string(b[:n])
