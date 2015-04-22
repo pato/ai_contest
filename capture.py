@@ -360,7 +360,14 @@ class CaptureRules:
     if state.isOver():
       game.gameOver = True
       if not game.rules.quiet:
-        print state.data.score
+        if state.data.score > 0:
+          winner = 'Red'
+        elif state.data.score < 0:
+          winner = 'Blue'
+        else:
+          winner = 'Tie'
+        print winner, state.data.score
+          
         # if state.getRedFood().count() == MIN_FOOD:
         #     print 'The Blue team has captured all but %d of the opponents\' dots.' % MIN_FOOD
         # if state.getBlueFood().count() == MIN_FOOD:
