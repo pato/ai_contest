@@ -177,7 +177,7 @@ class Defensive(Feature):
     def getWeights(self, agent, gameState, action):
         return {'pacmanDistance': -50.0,
                 'onDefense': 100.0,
-                'disperse': 4.0,
+                'disperse': 0.0,
                 'dontReverse': -8.0,
                 'dontStop': -100.0,
                 'feasts': 0.0}
