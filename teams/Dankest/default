@@ -1,0 +1,17 @@
+Offensive
+score 300.0
+ghostDistance 50.0
+pacmanDistance -10.0
+disperse 4.0
+agentFoodDistance -5.0
+ghostFoodDistance 4.0
+dontStop -10000000.0
+feasts -1000.0
+
+Defensive
+pacmanDistance -50.0
+onDefense 100.0
+disperse 0.0
+dontReverse -8.0
+dontStop -100.0
+feasts 0.0
