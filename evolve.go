@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	const NUM_TRIALS = 1
+	const NUM_TRIALS = 8
 	var trials [NUM_TRIALS]map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
@@ -92,7 +92,7 @@ func trial(oweights map[string]float64, dweights map[string]float64, c chan int6
 	weightstring = "'" + weightstring + "'"
 
 	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "10", "-Q", "-k", "2", "-w", weightstring)
+	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "400", "-Q", "-k", "2", "-w", weightstring)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
@@ -109,7 +109,6 @@ func trial(oweights map[string]float64, dweights map[string]float64, c chan int6
 	err = cmd.Wait()
 
 	// Get the results
-	fmt.Println(s)
 	lines := strings.Split(s, "\n")
 	result := lines[len(lines)-2]
 	if result == "Tie game!" {
