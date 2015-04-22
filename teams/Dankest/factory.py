@@ -29,6 +29,30 @@ class Factory(captureAgents.AgentFactory):
         self.ghostStrategies = [ strategy.BaselineAdaptive,
                 strategy.BaselineAdaptive ]
 
+        # Load the weights from a file
+        import commands
+        _, weightsFile =  commands.getstatusoutput('find -name weights')
+        wf = open(weightsFile, "r")
+        self.offensiveFeatureWeights = {}
+        self.defensiveFeatureWeights = {}
+        cstrategy = None
+        for l in wf:
+            l = l.rstrip() # remove new line at end
+            if l == "":
+                pass
+            elif l == "Offensive":
+                cstrategy = self.offensiveFeatureWeights
+            elif l == "Defensive":
+                cstrategy = self.defensiveFeatureWeights
+            else:
+                feature, weight = l.split()
+                cstrategy[feature] = float(weight)
+
+        strategy.Offensive.weights = self.offensiveFeatureWeights
+        strategy.Defensive.weights = self.defensiveFeatureWeights
+        strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
+        strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
+
     def getAgent(self, index):
         "Currently builds a BasicAgent"
         # Make the agent
@@ -55,6 +79,7 @@ class Factory(captureAgents.AgentFactory):
                 self.opponents.append(ghost)
                 self.particleFilter.addGhostAgent(ghost)
 
+
         # Create the marginal particle filter for the agent
         agent.tracker = tracking.Tracker(
                 self.particleFilter, gameState, agent)
@@ -63,3 +88,6 @@ class Factory(captureAgents.AgentFactory):
         if agent.index in map(agents.TrackingAgent.getIndex, self.team):
             current = self.strategies.pop()
             agent.setStrategy(current())
+
+
+

@@ -80,7 +80,7 @@ class Feature(Strategy):
         Returns the weights for each of the features. These can potentially be
         learned.
         """
-        util.raiseNotDefined()
+        return self.weights
 
     def evaluate(self, agent, gameState, action):
         features = self.getFeatures(agent, gameState, action)
@@ -135,19 +135,6 @@ class Offensive(Feature):
         #print action, features * self.getWeights(agent, gameState, action), features
         return features
 
-    def getWeights(self, agent, gameState, action):
-        "The weights for the agent"
-
-        # TODO can we learn these efficiently somehow? They are kind of arbitrary
-        return {'score': 300.0,
-                'ghostDistance': 50.0,
-                #'pacmanDistance': -10.0,
-                'disperse': 4.0,
-                'agentFoodDistance': -5.0,
-                'ghostFoodDistance': 4.0,
-                'dontStop': -10000000.0,
-                'feasts': 0.0}
-
 class Defensive(Feature):
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
@@ -174,14 +161,6 @@ class Defensive(Feature):
         return features
 
 
-    def getWeights(self, agent, gameState, action):
-        return {'pacmanDistance': -50.0,
-                'onDefense': 100.0,
-                'disperse': 0.0,
-                'dontReverse': -8.0,
-                'dontStop': -100.0,
-                'feasts': 0.0}
-
 class BaselineOffensive(Feature):
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
@@ -189,10 +168,6 @@ class BaselineOffensive(Feature):
         feature.score(agent, successor, features)
         feature.foodDistance(agent, successor, features)
         return features
-
-    def getWeights(self, agent, gameState, action):
-        return {'score': 100,
-                'foodDistance' : -1}
 
 class BaselineDefensive(Feature):
     def getFeatures(self, agent, gameState, action):
@@ -207,13 +182,6 @@ class BaselineDefensive(Feature):
         if action == rev: features['reverse'] = 1
 
         return features
-
-    def getWeights(self, agent, gameState, action):
-        return {'numInvaders': -1000,
-                'onDefense': 100,
-                'invaderDistance': -10,
-                'stop': -100,
-                'reverse': -2}
 
 class BaselineAdaptive(Adaptive):
     """
