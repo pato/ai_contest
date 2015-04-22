@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -56,7 +55,11 @@ func main() {
 		}
 	}
 
-	trial(trials[0], defaultDWeights)
+	team, score := trial(trials[0], defaultDWeights)
+	log.Printf("Trial 1: Team: %s with score %d\n", team, score)
+
+	team, score = trial(trials[0], defaultDWeights)
+	log.Printf("Trial 2: Team: %s with score %d\n", team, score)
 
 	//	for generation := 0; ; generation++ {
 	//		log.Printf("Starting %dth generation", generation)
@@ -84,7 +87,7 @@ func trial(oweights map[string]float64, dweights map[string]float64) (string, in
 	}
 
 	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "1000", "-Q", "-k", "2")
+	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "10", "-Q", "-k", "2")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
@@ -115,7 +118,6 @@ func trial(oweights map[string]float64, dweights map[string]float64) (string, in
 		team := words[0]
 		//score, _ := strconv.ParseInt(re.ReplaceAllString(result, ""), 10, 64)
 		score, _ := strconv.ParseInt(words[1], 10, 64)
-		fmt.Println(words)
 		return team, score
 	}
 	return "", 0
