@@ -126,6 +126,7 @@ class Offensive(Feature):
         #feature.
         feature.bestFoodDistance(agent, successor, features)
         feature.disperse(agent, successor, features)
+        feature.feasts(agent, successor, features)
 
         if action == 'Stop':
             features['dontStop'] = 1.0
@@ -144,7 +145,8 @@ class Offensive(Feature):
                 'disperse': 4.0,
                 'agentFoodDistance': -5.0,
                 'ghostFoodDistance': 4.0,
-                'dontStop': -10000000.0}
+                'dontStop': -10000000.0,
+                'feasts': 0.0}
 
 class Defensive(Feature):
     def getFeatures(self, agent, gameState, action):
@@ -156,6 +158,7 @@ class Defensive(Feature):
         feature.onDefense(agent, successor, features)
         feature.disperse(agent, successor, features)
         #feature.randomValue(agent, successor, features)
+        feature.feasts(agent, successor, features)
 
         if action == 'Stop':
             features['dontStop'] = 1.0
@@ -176,7 +179,8 @@ class Defensive(Feature):
                 'onDefense': 100.0,
                 'disperse': 4.0,
                 'dontReverse': -8.0,
-                'dontStop': -100.0}
+                'dontStop': -100.0,
+                'feasts': 0.0}
 
 class BaselineOffensive(Feature):
     def getFeatures(self, agent, gameState, action):

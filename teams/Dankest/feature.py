@@ -98,6 +98,25 @@ def disperse(agent, successor, features=util.Counter()):
     features['disperse'] = sum(agent.getMazeDistance(myPos, p) for p in positions)
     return features
 
+def feasts(agent, successor, features=util.Counter()):
+    """
+    Number of pill groups greater than 2
+    O(n^2) but can definitely be faster
+    """
+    foods = agent.getFood(successor).asList()
+    feastsFound = []
+    feasts = 0
+    for food in foods:
+        distances = list(agent.getMazeDistance(food, f) for f in foods)
+        feastFoods = [foods[i] for i, dist in enumerate(distances) if dist <= 1]
+        if len(feastFoods) > 1:
+            feastsFound.extend(feastFoods)
+            for f in feastFoods: foods.remove(f)
+            feasts += 1 
+    features['feasts'] = feasts
+    return features
+
+
 def onDefense(agent, successor, features=util.Counter()):
     """
     For defensive agents we want to remain on our side. If the agent is on our
