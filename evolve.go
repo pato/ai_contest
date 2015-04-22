@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -13,7 +14,7 @@ import (
 )
 
 func main() {
-	const NUM_TRIALS = 2
+	const NUM_TRIALS = 1
 	var trials [NUM_TRIALS]map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
@@ -55,39 +56,43 @@ func main() {
 		}
 	}
 
-	team, score := trial(trials[0], defaultDWeights)
-	log.Printf("Trial 1: Team: %s with score %d\n", team, score)
+	results := make(chan int64)
 
-	team, score = trial(trials[0], defaultDWeights)
-	log.Printf("Trial 2: Team: %s with score %d\n", team, score)
+	for i := 0; i < NUM_TRIALS; i++ {
+		go trial(trials[i], defaultDWeights, results)
+	}
+	for i := 0; i < NUM_TRIALS; i++ {
+		fmt.Println(<-results)
+	}
 
 	//	for generation := 0; ; generation++ {
 	//		log.Printf("Starting %dth generation", generation)
 	//		/* Iteration */
-	//		for i := 0; i < NUM_TRIALS; i++ {
-	//			go trial(trials[i], defaultDWeights)
-	//		}
 	//	}
 }
 
-func trial(oweights map[string]float64, dweights map[string]float64) (string, int64) {
+func trial(oweights map[string]float64, dweights map[string]float64, c chan int64) {
 	// Write the weights file
-	f, err := os.Create("ignorews")
-	if err != nil {
-		panic(err)
-	}
-	f.WriteString("Offensive\n")
-	for feature, weight := range oweights {
-		f.WriteString(fmt.Sprintf("%s %.2f\n", feature, weight))
-	}
-	f.WriteString("\n")
-	f.WriteString("Defensive\n")
-	for feature, weight := range dweights {
-		f.WriteString(fmt.Sprintf("%s %.2f\n", feature, weight))
-	}
+	//	f, err := os.Create("ignorews")
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	f.WriteString("Offensive\n")
+	//	for feature, weight := range oweights {
+	//		f.WriteString(fmt.Sprintf("%s %.2f\n", feature, weight))
+	//	}
+	//	f.WriteString("\n")
+	//	f.WriteString("Defensive\n")
+	//	for feature, weight := range dweights {
+	//		f.WriteString(fmt.Sprintf("%s %.2f\n", feature, weight))
+	//	}
+
+	weightbytes, _ := json.Marshal(oweights)
+	weightstring := string(weightbytes)
+	weightstring = "'" + weightstring + "'"
 
 	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "10", "-Q", "-k", "2")
+	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "10", "-Q", "-k", "2", "-w", weightstring)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
@@ -97,30 +102,29 @@ func trial(oweights map[string]float64, dweights map[string]float64) (string, in
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Waiting for game to finish...")
+	//log.Printf("Waiting for game to finish...")
 	b := make([]byte, 2000)
 	n, err := io.ReadFull(stdout, b)
 	s := string(b[:n])
 	err = cmd.Wait()
 
 	// Get the results
+	fmt.Println(s)
 	lines := strings.Split(s, "\n")
 	result := lines[len(lines)-2]
 	if result == "Tie game!" {
 		/* We have a tie */
-		return "tie", 0
+		c <- 0
 	} else {
 		/* We have a winner */
 		f := func(c rune) bool {
 			return unicode.IsSpace(c)
 		}
 		words := strings.FieldsFunc(result, f)
-		team := words[0]
-		//score, _ := strconv.ParseInt(re.ReplaceAllString(result, ""), 10, 64)
+		//team := words[0]
 		score, _ := strconv.ParseInt(words[1], 10, 64)
-		return team, score
+		c <- score
 	}
-	return "", 0
 }
 
 /* Time is up.\nTie game! */
