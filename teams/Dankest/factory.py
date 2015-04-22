@@ -30,23 +30,23 @@ class Factory(captureAgents.AgentFactory):
                 strategy.BaselineAdaptive ]
 
         # Load the weights from a file
-        import commands
-        _, weightsFile =  commands.getstatusoutput('find -name weights')
-        wf = open(weightsFile, "r")
-        self.offensiveFeatureWeights = {}
-        self.defensiveFeatureWeights = {}
-        cstrategy = None
-        for l in wf:
-            l = l.rstrip() # remove new line at end
-            if l == "":
-                pass
-            elif l == "Offensive":
-                cstrategy = self.offensiveFeatureWeights
-            elif l == "Defensive":
-                cstrategy = self.defensiveFeatureWeights
-            else:
-                feature, weight = l.split()
-                cstrategy[feature] = float(weight)
+        # import commands
+        # _, weightsFile =  commands.getstatusoutput('find . -name weights')
+        # wf = open(weightsFile, "r")
+        self.offensiveFeatureWeights = Factory.weights
+        self.defensiveFeatureWeights = Factory.weights
+        # cstrategy = None
+        # for l in wf:
+        #     l = l.rstrip() # remove new line at end
+        #     if l == "":
+        #         pass
+        #     elif l == "Offensive":
+        #         cstrategy = self.offensiveFeatureWeights
+        #     elif l == "Defensive":
+        #         cstrategy = self.defensiveFeatureWeights
+        #     else:
+        #         feature, weight = l.split()
+        #         cstrategy[feature] = float(weight)
 
         strategy.Offensive.weights = self.offensiveFeatureWeights
         strategy.Defensive.weights = self.defensiveFeatureWeights
