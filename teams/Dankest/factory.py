@@ -44,7 +44,7 @@ class Factory(captureAgents.AgentFactory):
     def getAgent(self, index):
         "Build an agent"
         # If the weights are None, then don't display belief clouds
-        agent = agents.TrackingAgent(index, self, Factory.weights is None)
+        agent = agents.TrackingAgent(index, self, Factory.weights is not None)
         self.team.append(agent)
         return agent
 
