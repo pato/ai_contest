@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode"
 )
+
+const NUM_TRIALS = 8
 
 type Trial struct {
 	trial  int
@@ -19,8 +23,13 @@ type Trial struct {
 	score  int
 }
 
+type ByScore [NUM_TRIALS]Trial
+
+func (a ByScore) Len() int           { return len(a) }
+func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByScore) Less(i, j int) bool { return a[i].score < a[j].score }
+
 func main() {
-	const NUM_TRIALS = 8
 	var trials [NUM_TRIALS]map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
@@ -62,14 +71,31 @@ func main() {
 		}
 	}
 
+	// Run a generation
 	results := make(chan Trial)
 
+	log.Printf("-------------------------------- Starting generation %d --------------------------------", 1)
 	for i := 0; i < NUM_TRIALS; i++ {
+		// Perform some random permutations
+		for k, v := range trials[i] {
+			trials[i][k] = v + rand.NormFloat64()*v
+			//trials[i][k] = v + rand.Float64()*v
+			//trials[i][k] = v * (1 + (rand.Float64()*2 - 1))
+		}
+
+		// Run the trial
 		go trial(i, trials[i], defaultDWeights, results)
 	}
+
+	// Get the Trial results
+	var trialResults [NUM_TRIALS]Trial
 	for i := 0; i < NUM_TRIALS; i++ {
-		fmt.Println(<-results)
+		trialResults[i] = <-results
 	}
+
+	fmt.Println(trialResults)
+	sort.Sort(ByScore(trialResults))
+	fmt.Println(trialResults)
 
 	//	for generation := 0; ; generation++ {
 	//		log.Printf("Starting %dth generation", generation)
@@ -82,6 +108,7 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	weightbytes, _ := json.Marshal(oweights)
 	weightstring := string(weightbytes)
 	weightstring = strings.Replace(weightstring, "\"", "'", -1)
+	fmt.Printf("%d - %s\n", index, weightstring)
 
 	// Run the simulator
 	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "400", "-Q", "-k", "2", "-w", weightstring)
@@ -95,7 +122,6 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 		log.Fatal("START FAILED")
 		log.Fatal(err)
 	}
-	log.Printf("Waiting for game to finish...")
 	b := make([]byte, 2000)
 	n, err := io.ReadFull(stdout, b)
 	s := string(b[:n])
