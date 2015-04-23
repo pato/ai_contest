@@ -173,6 +173,3 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 		c <- Trial{index, team, int(score)}
 	}
 }
-
-/* Time is up.\nTie game! */
-/* Time is up.\nThe Blue/Red team wins by X points. */
