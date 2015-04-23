@@ -43,12 +43,6 @@ class Strategy:
                 Strategy.getPossibleActions(agent, gameState) ]
     getPossiblePositions = staticmethod(getPossiblePositions)
 
-    def getTransitions(agent, gameState):
-        "Creates pairs of (action, result)"
-        return zip(Strategy.getPossibleActions(agent, gameState),
-                Strategy.getPossibleSuccessors(agent, gameState))
-    getTransitions = staticmethod(getTransitions)
-
     def __call__(self, agent, gameState):
         "Selects the action given a gamestate"
         return util.raiseNotDefined()
@@ -80,7 +74,7 @@ class Feature(Strategy):
         Returns the weights for each of the features. These can potentially be
         learned.
         """
-        return self.weights
+        return getattr(self, 'weights', {})
 
     def evaluate(self, agent, gameState, action):
         features = self.getFeatures(agent, gameState, action)
@@ -116,6 +110,9 @@ class Adaptive(Feature):
 
 
 class Offensive(Feature):
+    # TODO Put contest weights here
+    weights = { 'score': 1.0 }
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
@@ -132,10 +129,12 @@ class Offensive(Feature):
             features['dontStop'] = 1.0
 
         # Return feature dictionary
-        #print action, features * self.getWeights(agent, gameState, action), features
         return features
 
 class Defensive(Feature):
+    # TODO Put contest weights here
+    weights = { 'score': 1.0 }
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
@@ -144,24 +143,22 @@ class Defensive(Feature):
         feature.pacmanDistance(agent, successor, features)
         feature.onDefense(agent, successor, features)
         feature.disperse(agent, successor, features)
-        #feature.randomValue(agent, successor, features)
         feature.feasts(agent, successor, features)
 
-        if action == 'Stop':
-            features['dontStop'] = 1.0
-
-        rev = game.Directions.REVERSE[
-                gameState.getAgentState(agent.index).configuration.direction]
-        if action == rev:
-            features['dontReverse'] = 1.0
-
+        # Features specifically concerning moves
+        state = gameState.getAgentState(agent.index)
+        rev = game.Directions.REVERSE[state.configuration.direction]
+        if action == game.Directions.STOP: features['stop'] = 1.0
+        if action == rev: features['reverse'] = 1.0
 
         # Return feature dictionary
-        #print action, features * self.getWeights(agent, gameState, action), features
         return features
 
 
 class BaselineOffensive(Feature):
+    # Similarly, these are just defaults
+    weights = {'successorScore': 100, 'distanceToFood': -1}
+    
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
@@ -170,6 +167,9 @@ class BaselineOffensive(Feature):
         return features
 
 class BaselineDefensive(Feature):
+    # These too
+    weights = {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
@@ -177,9 +177,11 @@ class BaselineDefensive(Feature):
         feature.onDefense(agent, gameState, features)
         feature.invaderDistance(agent, gameState, features)
 
-        if action == game.Directions.STOP: features['stop'] = 1
-        rev = game.Directions.REVERSE[gameState.getAgentState(agent.index).configuration.direction]
-        if action == rev: features['reverse'] = 1
+        # Features specifically concerning moves
+        state = gameState.getAgentState(agent.index)
+        rev = game.Directions.REVERSE[state.configuration.direction]
+        if action == game.Directions.STOP: features['stop'] = 1.0
+        if action == rev: features['reverse'] = 1.0
 
         return features
 

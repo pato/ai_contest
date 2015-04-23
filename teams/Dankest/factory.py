@@ -15,6 +15,13 @@ class Factory(captureAgents.AgentFactory):
     particle filter for tracking the other team, as well an array of agents
     which is used for our agents to communicate amoungst themselves.
     """
+    
+    """
+    This variable is se by the training environment. If it is None, then we
+    are not currently training.
+    """
+    weights = None
+
     def __init__(self, isRed, **args):
         captureAgents.AgentFactory.__init__(self,isRed)
         self.board = board.Board()
@@ -29,34 +36,19 @@ class Factory(captureAgents.AgentFactory):
         self.ghostStrategies = [ strategy.BaselineAdaptive,
                 strategy.BaselineAdaptive ]
 
-        # Load the weights from a file
-        # import commands
-        # _, weightsFile =  commands.getstatusoutput('find . -name weights')
-        # wf = open(weightsFile, "r")
-        self.offensiveFeatureWeights = Factory.weights
-        self.defensiveFeatureWeights = Factory.weights
-        # cstrategy = None
-        # for l in wf:
-        #     l = l.rstrip() # remove new line at end
-        #     if l == "":
-        #         pass
-        #     elif l == "Offensive":
-        #         cstrategy = self.offensiveFeatureWeights
-        #     elif l == "Defensive":
-        #         cstrategy = self.defensiveFeatureWeights
-        #     else:
-        #         feature, weight = l.split()
-        #         cstrategy[feature] = float(weight)
-
-        strategy.Offensive.weights = self.offensiveFeatureWeights
-        strategy.Defensive.weights = self.defensiveFeatureWeights
-        strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
-        strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
+        # Only use weights if provided
+        if Factory.weights is not None:
+            self.offensiveFeatureWeights = Factory.weights
+            self.defensiveFeatureWeights = Factory.weights
+            strategy.Offensive.weights = self.offensiveFeatureWeights
+            strategy.Defensive.weights = self.defensiveFeatureWeights
+            strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
+            strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
 
     def getAgent(self, index):
-        "Currently builds a BasicAgent"
-        # Make the agent
-        agent = agents.TrackingAgent(index, self)
+        "Build an agent"
+        # If the weights are None, then don't display belief clouds
+        agent = agents.TrackingAgent(index, self, Factory.weights is None)
         self.team.append(agent)
         return agent
 
