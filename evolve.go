@@ -13,6 +13,12 @@ import (
 	"unicode"
 )
 
+type Trial struct {
+	trial  int
+	winner string
+	score  int
+}
+
 func main() {
 	const NUM_TRIALS = 8
 	var trials [NUM_TRIALS]map[string]float64
@@ -56,10 +62,10 @@ func main() {
 		}
 	}
 
-	results := make(chan int64)
+	results := make(chan Trial)
 
 	for i := 0; i < NUM_TRIALS; i++ {
-		go trial(trials[i], defaultDWeights, results)
+		go trial(i, trials[i], defaultDWeights, results)
 	}
 	for i := 0; i < NUM_TRIALS; i++ {
 		fmt.Println(<-results)
@@ -71,7 +77,7 @@ func main() {
 	//	}
 }
 
-func trial(oweights map[string]float64, dweights map[string]float64, c chan int64) {
+func trial(index int, oweights map[string]float64, dweights map[string]float64, c chan Trial) {
 
 	weightbytes, _ := json.Marshal(oweights)
 	weightstring := string(weightbytes)
@@ -104,16 +110,16 @@ func trial(oweights map[string]float64, dweights map[string]float64, c chan int6
 	result := lines[len(lines)-2]
 	if result == "Tie game!" {
 		/* We have a tie */
-		c <- 0
+		c <- Trial{index, "tie", 0}
 	} else {
 		/* We have a winner */
 		f := func(c rune) bool {
 			return unicode.IsSpace(c)
 		}
 		words := strings.FieldsFunc(result, f)
-		//team := words[0]
-		score, _ := strconv.ParseInt(words[1], 10, 64)
-		c <- score
+		team := words[0]
+		score, _ := strconv.ParseInt(words[1], 10, 32)
+		c <- Trial{index, team, int(score)}
 	}
 }
 
