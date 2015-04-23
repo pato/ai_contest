@@ -23,14 +23,15 @@ type Trial struct {
 	score  int
 }
 
-type ByScore [NUM_TRIALS]Trial
+type ByScore []Trial
 
 func (a ByScore) Len() int           { return len(a) }
 func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByScore) Less(i, j int) bool { return a[i].score < a[j].score }
 
 func main() {
-	var trials [NUM_TRIALS]map[string]float64
+	return
+	var trials []map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
 	if err != nil {
@@ -78,7 +79,7 @@ func main() {
 	for i := 0; i < NUM_TRIALS; i++ {
 		// Perform some random permutations
 		for k, v := range trials[i] {
-			trials[i][k] = v + rand.NormFloat64()*v
+			trials[i][k] = v + rand.NormFloat64()*v/4
 			//trials[i][k] = v + rand.Float64()*v
 			//trials[i][k] = v * (1 + (rand.Float64()*2 - 1))
 		}
@@ -88,7 +89,7 @@ func main() {
 	}
 
 	// Get the Trial results
-	var trialResults [NUM_TRIALS]Trial
+	var trialResults []Trial
 	for i := 0; i < NUM_TRIALS; i++ {
 		trialResults[i] = <-results
 	}
