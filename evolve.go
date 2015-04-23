@@ -71,37 +71,60 @@ func main() {
 		}
 	}
 
-	// Run a generation
-	results := make(chan Trial)
+	for generation := 0; generation < 5; generation++ {
+		// Run a generation
+		log.Printf("Starting %dth generation", generation)
+		results := make(chan Trial)
 
-	log.Printf("-------------------------------- Starting generation %d --------------------------------", 1)
-	for i := 0; i < NUM_TRIALS; i++ {
-		// Perform some random permutations
-		for k, v := range trials[i] {
-			permute := rand.Float64() > 0.5
-			if permute {
-				trials[i][k] = v + (rand.NormFloat64() * v / 4)
+		for i := 0; i < NUM_TRIALS; i++ {
+			// Perform some random permutations
+			for k, v := range trials[i] {
+				permute := rand.Float64() > 0.5
+				if permute {
+					trials[i][k] = v + (rand.NormFloat64() * v / 4)
+				}
 			}
+
+			// Run the trial
+			go trial(i, trials[i], defaultDWeights, results)
 		}
 
-		// Run the trial
-		go trial(i, trials[i], defaultDWeights, results)
+		// Get the Trial results
+		trialResults := make([]Trial, 8)
+		for i := 0; i < NUM_TRIALS; i++ {
+			trialResults[i] = <-results
+		}
+
+		sort.Sort(ByScore(trialResults))
+		log.Println(trialResults)
+
+		// Marry the top 4 results to generate new ones (and the first and second with the fifth to get eight trials)
+		marryTrials(trials, 0, 1, 2)
+		marryTrials(trials, 1, 1, 3)
+		marryTrials(trials, 2, 1, 4)
+		marryTrials(trials, 3, 2, 3)
+		marryTrials(trials, 4, 2, 4)
+		marryTrials(trials, 5, 3, 4)
+		marryTrials(trials, 6, 1, 5)
+		marryTrials(trials, 7, 2, 5)
+
+		//	for generation := 0; ; generation++ {
+		//		log.Printf("Starting %dth generation", generation)
+		//		/* Iteration */
+		//	}
 	}
+}
 
-	// Get the Trial results
-	var trialResults []Trial
-	for i := 0; i < NUM_TRIALS; i++ {
-		trialResults[i] = <-results
+func marryTrials(trials [NUM_TRIALS]map[string]float64, dest, dad, mom int) {
+	if mom == dad || dad == dest || mom == dest {
+		panic("Cannot inbreed")
 	}
-
-	fmt.Println(trialResults)
-	sort.Sort(ByScore(trialResults))
-	fmt.Println(trialResults)
-
-	//	for generation := 0; ; generation++ {
-	//		log.Printf("Starting %dth generation", generation)
-	//		/* Iteration */
-	//	}
+	avg := func(a, b float64) float64 {
+		return (a + b) / 2
+	}
+	for k, _ := range trials[dest] {
+		trials[dest][k] = avg(trials[dad][k], trials[mom][k])
+	}
 }
 
 func trial(index int, oweights map[string]float64, dweights map[string]float64, c chan Trial) {
