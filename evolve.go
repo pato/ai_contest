@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	const NUM_TRIALS = 1
+	const NUM_TRIALS = 8
 	var trials [NUM_TRIALS]map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
@@ -72,24 +72,10 @@ func main() {
 }
 
 func trial(oweights map[string]float64, dweights map[string]float64, c chan int64) {
-	// Write the weights file
-	//	f, err := os.Create("ignorews")
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//	f.WriteString("Offensive\n")
-	//	for feature, weight := range oweights {
-	//		f.WriteString(fmt.Sprintf("%s %.2f\n", feature, weight))
-	//	}
-	//	f.WriteString("\n")
-	//	f.WriteString("Defensive\n")
-	//	for feature, weight := range dweights {
-	//		f.WriteString(fmt.Sprintf("%s %.2f\n", feature, weight))
-	//	}
 
 	weightbytes, _ := json.Marshal(oweights)
 	weightstring := string(weightbytes)
-	weightstring = "'" + weightstring + "'"
+	weightstring = strings.Replace(weightstring, "\"", "'", -1)
 
 	// Run the simulator
 	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "400", "-Q", "-k", "2", "-w", weightstring)
@@ -112,8 +98,6 @@ func trial(oweights map[string]float64, dweights map[string]float64, c chan int6
 		log.Fatal("WAIT FAILED")
 		log.Fatal(err)
 	}
-	log.Printf("Game ended...")
-	fmt.Println(s)
 
 	// Get the results
 	lines := strings.Split(s, "\n")

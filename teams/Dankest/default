@@ -5,7 +5,7 @@ pacmanDistance -10.0
 disperse 4.0
 agentFoodDistance -5.0
 ghostFoodDistance 4.0
-dontStop -10000000.0
+dontStop -10000.0
 feasts -1000.0
 
 Defensive
