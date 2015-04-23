@@ -61,7 +61,8 @@ class Factory(captureAgents.AgentFactory):
             for g in oppIndex:
                 ghost = agents.StrategicGhost(g, self, 0.5)
                 ghost.registerInitialState(gameState)
-                ghost.strategy = strategy.BaselineAdaptive()
+                #ghost.strategy = strategy.BaselineAdaptive()
+                ghost.strategy = strategy.Random()
                 ghost.tracker = tracking.GhostTracker(
                         self.particleFilter, gameState, ghost)
                 self.opponents.append(ghost)
