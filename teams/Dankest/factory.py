@@ -29,12 +29,8 @@ class Factory(captureAgents.AgentFactory):
         self.team, self.opponents = [], []
         self.init = False
 
-        # Allow for more robust configurations, or configurations that scale
-        # better? i.e. Instead of specifying individual agents, specify
-        # something like strategy.Balanced, Aggressive, etc.?
+        # Currently makes one ghost offensive and one defensive
         self.strategies = [getattr(strategy, v) for v in args.values()]
-        self.ghostStrategies = [ strategy.BaselineAdaptive,
-                strategy.BaselineAdaptive ]
 
         # Only use weights if provided
         if Factory.weights is not None:
@@ -65,7 +61,7 @@ class Factory(captureAgents.AgentFactory):
             for g in oppIndex:
                 ghost = agents.StrategicGhost(g, self, 0.5)
                 ghost.registerInitialState(gameState)
-                ghost.strategy = self.ghostStrategies.pop()()
+                ghost.strategy = strategy.BaselineAdaptive()
                 ghost.tracker = tracking.GhostTracker(
                         self.particleFilter, gameState, ghost)
                 self.opponents.append(ghost)
