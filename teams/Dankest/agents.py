@@ -32,7 +32,8 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
     def chooseAction(self, gameState):
         "Updates belief distributions and calls a 'strategy'"
-        start = time.time()
+        if self.debug:
+            start = time.time()
 
         # Update the current position and beliefs
         self.position = gameState.getAgentPosition(self.index)
@@ -50,9 +51,9 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
         return action
 
-    def setStrategy(self, strat):
+    def setStrategy(self, strategy):
         "Changes the current strategy. Allows for an agent to adapt to the game"
-        self.strategy = strat
+        self.strategy = strategy
 
     def getPosition(self):
         return self.position
@@ -62,9 +63,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
     def ourSide(self, gameState, position=None):
         "Tests if a position is on our side"
-
-        # TODO use gameState.agentStates[i].isPacman instead
-        if position == None:
+        if position is None:
             position = gameState.getAgentPosition(self.index)
 
         width = self.board.walls.width
