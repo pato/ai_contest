@@ -630,9 +630,8 @@ def readCommand( argv ):
                     help='Catch exceptions and enforce time limits')
  
   # Hack by Liam
-  parser.add_option('-w', '--weights', dest='weightString', default='{}',
+  parser.add_option('-w', '--weights', dest='weightString', default='None',
                     help='Specify weights')
-
 
   # Hack by Daniel
   parser.add_option('--frameTime', dest='frameTime', type='float',
@@ -716,7 +715,7 @@ def randomLayout():
   return layout
 
 import traceback
-def loadAgents(isRed, factory, textgraphics, cmdLineArgs, weights={}):
+def loadAgents(isRed, factory, textgraphics, cmdLineArgs, weights=None):
   "Calls agent factories and returns lists of agents"
   # Looks through all pythonPath Directories for the right module
   import os
