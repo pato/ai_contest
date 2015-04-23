@@ -30,8 +30,7 @@ func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByScore) Less(i, j int) bool { return a[i].score < a[j].score }
 
 func main() {
-	return
-	var trials []map[string]float64
+	var trials [NUM_TRIALS]map[string]float64
 
 	file, err := os.Open("./teams/Dankest/default")
 	if err != nil {
@@ -79,9 +78,10 @@ func main() {
 	for i := 0; i < NUM_TRIALS; i++ {
 		// Perform some random permutations
 		for k, v := range trials[i] {
-			trials[i][k] = v + rand.NormFloat64()*v/4
-			//trials[i][k] = v + rand.Float64()*v
-			//trials[i][k] = v * (1 + (rand.Float64()*2 - 1))
+			permute := rand.Float64() > 0.5
+			if permute {
+				trials[i][k] = v + (rand.NormFloat64() * v / 4)
+			}
 		}
 
 		// Run the trial
