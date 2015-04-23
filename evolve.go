@@ -27,7 +27,7 @@ type ByScore []Trial
 
 func (a ByScore) Len() int           { return len(a) }
 func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByScore) Less(i, j int) bool { return a[i].score < a[j].score }
+func (a ByScore) Less(i, j int) bool { return a[i].score > a[j].score }
 
 func main() {
 	var trials [NUM_TRIALS]map[string]float64
@@ -116,7 +116,7 @@ func main() {
 }
 
 func marryTrials(trials [NUM_TRIALS]map[string]float64, dest, dad, mom int) {
-	if mom == dad || dad == dest || mom == dest {
+	if mom == dad {
 		panic("Cannot inbreed")
 	}
 	avg := func(a, b float64) float64 {
