@@ -16,7 +16,7 @@ import (
 )
 
 const NUM_TRIALS = 8
-const NUM_GENERATIONS = 100
+const NUM_GENERATIONS = 20
 
 type Trial struct {
 	trial  int
@@ -136,7 +136,7 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	fmt.Printf("%d - %s\n", index, weightstring)
 
 	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "1000", "-Q", "-k", "2", "-w", weightstring)
+	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "2000", "-Q", "-k", "2", "-w", weightstring)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
