@@ -43,6 +43,6 @@ AgentFactory = 'factory.Factory'
 
 Partners = ['Liam Eagen','Pato Lankenau']
 
-AgentArgs = {'0': 'Offensive', '1': 'Offensive'}
+AgentArgs = {'0': 'Offensive', '1': 'Defensive'}
 
 NotifyList = []
