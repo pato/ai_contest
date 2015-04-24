@@ -25,7 +25,7 @@ class Factory(captureAgents.AgentFactory):
     def __init__(self, isRed, **args):
         captureAgents.AgentFactory.__init__(self,isRed)
         self.board = board.Board()
-        self.particleFilter = tracking.ContestParticleFilter(isRed, 300)
+        self.particleFilter = tracking.ContestParticleFilter(isRed, 100)
         self.team, self.opponents = [], []
         self.init = False
 
