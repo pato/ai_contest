@@ -16,7 +16,7 @@ import (
 )
 
 const NUM_TRIALS = 8
-const NUM_GENERATIONS = 10
+const NUM_GENERATIONS = 50
 const NUM_STEPS = 2000
 const TRAIN_OFFENSE = true
 
