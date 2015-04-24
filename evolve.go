@@ -17,7 +17,8 @@ import (
 
 const NUM_TRIALS = 8
 const NUM_GENERATIONS = 20
-const TRAIN_OFFENSE = true
+const NUM_STEPS = 2000
+const TRAIN_OFFENSE = false
 
 type Trial struct {
 	trial  int
@@ -140,8 +141,10 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	weightstring = strings.Replace(weightstring, "\"", "'", -1)
 	fmt.Printf("%d - %s\n", index, weightstring)
 
+	stepstring := "\"" + string(NUM_STEPS) + "\""
+
 	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", "2000", "-Q", "-k", "2", "-w", weightstring)
+	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "-w", weightstring)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
