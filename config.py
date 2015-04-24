@@ -43,6 +43,6 @@ AgentFactory = 'baselineAgents.BaselineAgents'
 
 Partners = ['Berkeley Staff']
 
-AgentArgs = {'first':'offense', 'second':'defense'}
+AgentArgs = {'first':'offense', 'second':'offense'}
 
 NotifyList = []
