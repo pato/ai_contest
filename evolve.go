@@ -17,6 +17,7 @@ import (
 
 const NUM_TRIALS = 8
 const NUM_GENERATIONS = 20
+const TRAIN_OFFENSE = true
 
 type Trial struct {
 	trial  int
@@ -87,7 +88,11 @@ func main() {
 			}
 
 			// Run the trial
-			go trial(i, trials[i], defaultDWeights, results)
+			if TRAIN_OFFENSE {
+				go trial(i, trials[i], defaultDWeights, results)
+			} else {
+				go trial(i, defaultOWeights, trials[i], results)
+			}
 		}
 
 		// Get the Trial results
