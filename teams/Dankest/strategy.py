@@ -140,7 +140,8 @@ class Offensive(Feature):
 
 class Defensive(Feature):
     # TODO Put contest weights here
-    weights = { 'score': 1.0 }
+    #weights = { 'score': 1.0 }
+    weights = {'pacmanDistance': -50.0, 'onDefense': 100.0, 'disperse': 0.0, 'dontReverse': -8.0, 'dontStop': -100, 'feasts': 0.0}
 
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
