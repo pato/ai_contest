@@ -2,6 +2,7 @@ import random
 
 import util
 import itertools
+import game
 
 """
 These functions are useful for calculating the distances of pacman and ghosts to
@@ -31,6 +32,41 @@ implemented as functions that can be used inside other strategies.
 def score(agent, successor, features=util.Counter()):
     "Calculates the score"
     features['score'] = agent.getScore(successor)
+    return features
+
+def foodDownPath(agent, predecessor, successor, features=util.Counter()):
+    """
+    Number of food pellets down the path of the successor
+    up to a given maze distance
+    """
+    maxSteps = 10
+    oldpos = predecessor.getAgentPosition(agent.index)
+    newpos = successor.getAgentPosition(agent.index)
+    food = agent.getFood(successor).asList()
+    walls = successor.getWalls()
+    wallList = walls.asList()
+
+
+    visited = {oldpos}
+    queue = util.Queue() 
+    queue.push(newpos)
+    foodCount = 0
+
+    legalNeighbors = lambda pos: game.Actions.getLegalNeighbors(pos, walls)
+    goodNeighbor = lambda pos: pos not in visited and agent.getMazeDistance(newpos, pos) < maxSteps
+
+    while not queue.isEmpty():
+        pos = queue.pop()
+        if pos not in visited:
+            visited.add(pos)
+            if pos in food:
+                foodCount += 1
+            for neighbor in legalNeighbors(pos):
+                if goodNeighbor(neighbor):
+                    queue.push(neighbor)
+    
+    features['foodDownPath'] = foodCount
+
     return features
 
 def foodDistance(agent, successor, features=util.Counter()):

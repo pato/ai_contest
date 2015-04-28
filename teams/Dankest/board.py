@@ -57,6 +57,9 @@ class Board:
         adj = game.Actions.getLegalNeighbors(position, self.walls)
         return [x for x in act if game.Actions.getSuccessor(position, x) in adj]
 
+    def getLegalNeighbors(self, position):
+        return game.Actions.getLegalNeighbors(position, self.walls)
+
     def getDistance(self, p, q):
         "Compute the vertex index, and then distance"
         return self.dist[self.legalReverse[p]][self.legalReverse[q]]
