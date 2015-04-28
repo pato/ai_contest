@@ -39,7 +39,7 @@ def foodDownPath(agent, predecessor, successor, features=util.Counter()):
     Number of food pellets down the path of the successor
     up to a given maze distance
     """
-    maxSteps = 10
+    maxSteps = 5
     oldpos = predecessor.getAgentPosition(agent.index)
     newpos = successor.getAgentPosition(agent.index)
     food = agent.getFood(successor).asList()
