@@ -112,10 +112,11 @@ class Adaptive(Feature):
 class Offensive(Feature):
     # TODO Put contest weights here
     #weights = { 'score': 1.0 }
-    weights = {'agentFoodDistance':-5.015006944353908,'disperse':0.5162611055588896,'dontStop':-5145.807103151626,'feasts':-55.047115581965,'ghostDistance':44.353568516626716,'ghostFoodDistance':2.078121539302075,'pacmanDistance':-3.637956876253101,'score':494.8849755629843}
+    #weights = {'foodDownPath': 10.0, 'agentFoodDistance':-5.015006944353908,'disperse':0.5162611055588896,'dontStop':-5145.807103151626,'feasts':-55.047115581965,'ghostDistance':44.353568516626716,'ghostFoodDistance':2.078121539302075,'pacmanDistance':-3.637956876253101,'score':494.8849755629843}
     #weights = {'agentFoodDistance':-6.13169281403951,'disperse':0.1240816945605375,'dontStop':-6174.556841352691,'feasts':-111.18597121422329,'ghostDistance':30.351904504468266,'ghostFoodDistance':1.9795279153381418,'pacmanDistance':-3.645269951232489,'score':675.9370914804919}
     #weights = {'agentFoodDistance':-8.756799781566395,'disperse':0.9092189572995799,'dontStop':-4290.845244111005,'feasts':-125.37448448921515,'ghostDistance':50.23547135970318,'ghostFoodDistance':2.2988748771699736,'pacmanDistance':-3.7381303735807796,'score':783.0366308982319}
     #weights = {'agentFoodDistance':-8.904444886696977,'disperse':1.0414696906450795,'dontStop':-12127.277953518435,'feasts':-1034.1865040893524,'ghostDistance':50.97918744737279,'ghostFoodDistance':1.651378442379878,'pacmanDistance':-29.26105612777171,'score':279.96989732367535}
+    weights = {'agentFoodDistance':-8.651098674855401,'disperse':3.8585068188055973,'dontStop':-10408.254388542864,'feasts':-779.536674122668,'foodDownPath':20.046386707133124,'ghostDistance':53.837701018501875,'ghostFoodDistance':2.5451881318320226,'pacmanDistance':-7.876099711872573,'score':217.31636026497412}
     
 
     def getFeatures(self, agent, gameState, action):

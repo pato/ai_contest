@@ -7,6 +7,8 @@ agentFoodDistance -5.0
 ghostFoodDistance 4.0
 dontStop -10000.0
 feasts -1000.0
+foodDownPath 10.0
+
 
 Defensive
 pacmanDistance -50.0
