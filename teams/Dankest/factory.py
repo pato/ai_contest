@@ -1,6 +1,7 @@
 # Standard Library
 import itertools
 import ast
+import re
 
 # Game
 import game
@@ -39,14 +40,19 @@ class Factory(captureAgents.AgentFactory):
         self.learn = ast.literal_eval(args.get('learn', '[]'))
 
         # Only use weights if provided
-        self.offensiveFeatureWeights = ast.literal_eval(args.get('offensiveWeights', '{}'))
-        self.defensiveFeatureWeights = ast.literal_eval(args.get('defensiveWeights', '{}'))
+        offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
+        defString = re.sub("\|", ",", args.get('defensiveWeights', '{}'))
+
+        self.offensiveFeatureWeights = ast.literal_eval(offString)
+        self.defensiveFeatureWeights = ast.literal_eval(defString)
         
         if self.offensiveFeatureWeights:
+            print "Passed off weights"
             strategy.Offensive.weights = self.offensiveFeatureWeights
             strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
         
         if self.defensiveFeatureWeights:
+            print "Passed def weights"
             strategy.Defensive.weights = self.defensiveFeatureWeights
             strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
 

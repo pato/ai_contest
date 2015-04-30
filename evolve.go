@@ -139,12 +139,14 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	weightbytes, _ := json.Marshal(oweights)
 	weightstring := string(weightbytes)
 	weightstring = strings.Replace(weightstring, "\"", "'", -1)
-	fmt.Printf("%d - %s\n", index, weightstring)
+	weightstring = strings.Replace(weightstring, ",", "|", -1)
+        weightstring = fmt.Sprintf("\"offensiveWeights=%s\"", weightstring)
+        fmt.Printf("%d - %s\n", index, weightstring)
 	stepstring := strconv.Itoa(NUM_STEPS)
 
 	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "-w", weightstring)
-	stdout, err := cmd.StdoutPipe()
+	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
+        stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -34,7 +34,6 @@ Settings:
     this agent code and design.
 
 """
-
 # Alpha-Numeric only
 TeamName = 'Team'
 
