@@ -1,3 +1,7 @@
+# Standard Library
+import itertools
+import ast
+
 # Game
 import game
 import captureAgents
@@ -20,8 +24,6 @@ class Factory(captureAgents.AgentFactory):
     This variable is se by the training environment. If it is None, then we
     are not currently training.
     """
-    weights = None
-
     def __init__(self, isRed, **args):
         captureAgents.AgentFactory.__init__(self,isRed)
         self.board = board.Board()
@@ -30,21 +32,32 @@ class Factory(captureAgents.AgentFactory):
         self.init = False
 
         # Currently makes one ghost offensive and one defensive
-        self.strategies = [getattr(strategy, v) for v in args.values()]
+        self.strategies = itertools.cycle([strategy.Offensive, strategy.Defensive])
+
+        # By default don't debug or learn
+        self.debug = ast.literal_eval(args.get('debug', 'False'))
+        self.learn = ast.literal_eval(args.get('learn', '[]'))
 
         # Only use weights if provided
-        if Factory.weights is not None:
-            self.offensiveFeatureWeights = Factory.weights
-            self.defensiveFeatureWeights = Factory.weights
+        self.offensiveFeatureWeights = ast.literal_eval(args.get('offensiveWeights', '{}'))
+        self.defensiveFeatureWeights = ast.literal_eval(args.get('defensiveWeights', '{}'))
+        
+        if self.offensiveFeatureWeights:
             strategy.Offensive.weights = self.offensiveFeatureWeights
-            strategy.Defensive.weights = self.defensiveFeatureWeights
             strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
+        
+        if self.defensiveFeatureWeights:
+            strategy.Defensive.weights = self.defensiveFeatureWeights
             strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
 
     def getAgent(self, index):
         "Build an agent"
         # If the weights are None, then don't display belief clouds
-        agent = agents.TrackingAgent(index, self, Factory.weights is not None)
+        agent = agents.TrackingAgent(index, self, self.debug)
+        if index in self.learn:
+            # If we are to learn, then we wrap the agent in a learning agent
+            print "Build learning"
+            agent = agents.LearningAgent(agent)
         self.team.append(agent)
         return agent
 
@@ -70,12 +83,12 @@ class Factory(captureAgents.AgentFactory):
 
 
         # Create the marginal particle filter for the agent
-        agent.tracker = tracking.Tracker(
+        agent.tracker = tracking.NaiveTracker(
                 self.particleFilter, gameState, agent)
 
         # Set the agent's strategy.
         if agent.index in map(agents.TrackingAgent.getIndex, self.team):
-            current = self.strategies.pop()
+            current = self.strategies.next()
             agent.setStrategy(current())
 
 

@@ -629,10 +629,6 @@ def readCommand( argv ):
   parser.add_option('-c', '--catchExceptions', action='store_true', default=False,
                     help='Catch exceptions and enforce time limits')
  
-  # Hack by Liam
-  parser.add_option('-w', '--weights', dest='weightString', default='None',
-                    help='Specify weights')
-
   # Hack by Daniel
   parser.add_option('--frameTime', dest='frameTime', type='float',
                     help=default('Controls the speed of graphical display'), default=0.0)
@@ -640,10 +636,6 @@ def readCommand( argv ):
   options, otherjunk = parser.parse_args(argv)
   assert len(otherjunk) == 0, "Unrecognized options: " + str(otherjunk)
   args = dict()
-  
-  if options.weightString:
-    import ast
-    weights = ast.literal_eval(options.weightString)
 
   # Choose a display format
   #if options.pygame:
@@ -684,7 +676,7 @@ def readCommand( argv ):
     blueArgs['numTraining'] = options.numTraining
   nokeyboard = options.textgraphics or options.quiet or options.numTraining > 0
   print '\nRed team %s with %s:' % (options.red, redArgs)
-  redAgents = loadAgents(True, options.red, nokeyboard, redArgs, weights)
+  redAgents = loadAgents(True, options.red, nokeyboard, redArgs)
   print '\nBlue team %s with %s:' % (options.blue, blueArgs)
   blueAgents = loadAgents(False, options.blue, nokeyboard, blueArgs)
   args['agents'] = sum([list(el) for el in zip(redAgents, blueAgents)],[]) # list of agents
@@ -715,7 +707,7 @@ def randomLayout():
   return layout
 
 import traceback
-def loadAgents(isRed, factory, textgraphics, cmdLineArgs, weights=None):
+def loadAgents(isRed, factory, textgraphics, cmdLineArgs):
   "Calls agent factories and returns lists of agents"
   # Looks through all pythonPath Directories for the right module
   import os
@@ -760,9 +752,7 @@ def loadAgents(isRed, factory, textgraphics, cmdLineArgs, weights=None):
     traceback.print_exc()
     return [None for i in range(3)]
 
-  foundFactory.weights = weights
   foundFactory = foundFactory(isRed=isRed, **args)
-  
   indexAddend = 0
   if not isRed:
     indexAddend = 1

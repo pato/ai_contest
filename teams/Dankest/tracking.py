@@ -42,16 +42,22 @@ class Tracker:
 
     def observe(self, gameState):
         "Observes, and elapses time for the current pacman"
+        self.gameState = gameState
         self.elapseTime(gameState)
         self.observeState(gameState)
 
     def getBeliefDistribution(self, ghost):
         "Returns the marginal belief over a particular ghost by summing out the others."
-        jointDistribution = self.particleFilter.getBeliefDistribution()
-        dist = util.Counter()
-        for t, prob in jointDistribution.items():
-            dist[t[self.opponents.index(ghost)]] += prob
-        return dist
+        if ghost in self.team:
+            dist = util.Counter()
+            dist[self.gameState.getAgentPosition(ghost)] = 1.0
+            return dist
+        else:
+            jointDistribution = self.particleFilter.getBeliefDistribution()
+            dist = util.Counter()
+            for t, prob in jointDistribution.items():
+                dist[t[self.opponents.index(ghost)]] += prob
+            return dist
 
     def getBeliefIterable(self):
         "Returns an iterable of belief distributions for the adversaries"
@@ -77,6 +83,31 @@ class GhostTracker(Tracker):
             dist = util.Counter()
             for t, prob in jointDistribution.items():
                 dist[t[self.team.index(ghost)]] += prob
+            return dist
+
+class NaiveTracker(Tracker):
+    """
+    Unlike the other two trackers, this tracker either: returns a precise
+    location if the agent's position can be found, otherwise returns a uniform
+    distribution over the positions. This is useful because it requires no
+    knowledge of anything
+    """
+    def __init__(self, particleFilter, gameState, agent):
+        Tracker.__init__(self, particleFilter, gameState, agent)
+        self.legalPositions = gameState.getWalls().asList(False)
+        self.uniform = util.Counter(dict.fromkeys(self.legalPositions, 1.0))
+        self.uniform.normalize()
+
+    def observe(self, gameState):
+        self.gameState = gameState
+
+    def getBeliefDistribution(self, ghost):
+        pos = self.gameState.getAgentPosition(ghost)
+        if pos is None:
+            return self.uniform.copy()
+        else:
+            dist = util.Counter()
+            dist[self.gameState.getAgentPosition(ghost)] = 1.0
             return dist
 
 class ContestParticleFilter:

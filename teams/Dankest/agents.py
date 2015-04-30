@@ -51,6 +51,11 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
         return action
 
+    def final(self, gameState):
+        "This gets run after the game is finished. This might be useful."
+        
+        #print "Game is over"
+
     def setStrategy(self, strategy):
         "Changes the current strategy. Allows for an agent to adapt to the game"
         self.strategy = strategy
@@ -84,6 +89,39 @@ class TrackingAgent(captureAgents.CaptureAgent):
             for a in self.getOpponents(gameState):
                 dists[a] = self.tracker.getBeliefDistribution(a)
             self.displayDistributionsOverPositions(dists)
+
+class LearningAgent(TrackingAgent):
+    """
+    Given a nested agent, this agent acts as a proxy and attempts to learn a
+    linear combination of feature weights. It takes a feature strategy, which it
+    uses to extract the weights and calculates which move it would make. Then it
+    calls the nested agents getAction. Using this, it updates the weight vector.
+    """
+    def __init__(self, nested):
+        self.__dict__ = nested.__dict__.copy()
+        # self.nested = nested
+        self.weights = util.Counter()
+        self.legalMoves = ['Stop', 'North', 'South', 'East', 'West']
+
+    def chooseAction(self, gameState):
+        """
+        This method calls the internal agents method, and ultimately uses this
+        to move, but uses the result to learn the agents weights.
+        """
+        correct = TrackingAgent.chooseAction(self, gameState)
+        data = {a: self.strategy.getFeatures(self, gameState, a)
+                for a in gameState.getLegalActions(self.index)}
+        result, action = max(data.items(), key=lambda (_,x): x * self.weights)
+
+        if action != correct:
+            print "Updating"
+            self.weights += data[correct]
+            self.weights -= data[result]
+        
+        return correct
+
+    def final(self, gameState):
+        print "Learned weights", self.weights
 
 class StrategicGhost(TrackingAgent):
     """
