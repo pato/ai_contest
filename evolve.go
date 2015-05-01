@@ -140,16 +140,20 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	oweightbytes, _ := json.Marshal(oweights)
 	oweightstring := string(oweightbytes)
 	oweightstring = strings.Replace(oweightstring, "\"", "'", -1)
-	oweightstring = strings.Replace(oweightstring, ",", "|", -1)
 	oweightstring = fmt.Sprintf("offensiveWeights=%s", oweightstring)
-	//fmt.Printf("%d - %s\n", index, oweightstring)
+	if TRAIN_OFFENSE {
+		fmt.Printf("%d - %s\n", index, oweightstring)
+	}
+	oweightstring = strings.Replace(oweightstring, ",", "|", -1)
 
 	dweightbytes, _ := json.Marshal(dweights)
 	dweightstring := string(dweightbytes)
 	dweightstring = strings.Replace(dweightstring, "\"", "'", -1)
+	if !TRAIN_OFFENSE {
+		dweightstring = fmt.Sprintf("defensiveWeights=%s", dweightstring)
+	}
+	fmt.Printf("%d - %s\n", index, dweightstring)
 	dweightstring = strings.Replace(dweightstring, ",", "|", -1)
-	dweightstring = fmt.Sprintf("defensiveWeights=%s", dweightstring)
-	//fmt.Sprintf("\"defensiveWeights=%s\"", dweightstring)
 
 	weightstring := "" + oweightstring + "," + dweightstring + ""
 
