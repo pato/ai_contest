@@ -9,6 +9,11 @@ These functions are useful for calculating the distances of pacman and ghosts to
 food. These can then be used to calculate for example, closest food, closest
 ghost, etc.
 """
+def getGhosts(agent, successor):
+    ghosts = (g.argMax() for g in agent.tracker.getBeliefIterable())
+    ghosts = (g for g in ghosts if agent.otherSide(successor, g))
+    return ghosts
+
 def getFoodDistances(agent, successor, position):
     food = agent.getFood(successor).asList()
     return [agent.getMazeDistance(position, f) for f in food]
@@ -93,6 +98,19 @@ def pacmanDistance(agent, successor, features=util.Counter()):
 
     features['pacmanDistance'] = closestPacman
     return features
+
+def invaders(agent, successor, features=util.Counter()):
+    """
+    Number of invaders
+    """
+#    enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+#    print enemies
+#    invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+#    features['numInvaders'] = len(invaders)
+#    if len(invaders) > 0:
+#      dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+#      features['invaderDistance'] = min(dists)
+
 
 def bestFoodDistance(agent, successor, features=util.Counter()):
     """
