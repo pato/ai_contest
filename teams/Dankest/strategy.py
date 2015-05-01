@@ -69,45 +69,53 @@ class Negamax(Strategy):
     def __init__(self, nested, depth=3):
         self.nested = nested
         self.depth = depth
+        print self.depth
+        print nested.weights
 
     def __call__(self, agent, gameState):
         state = capture.GameState(gameState)
-        return self.negamax(agent, state, agent.index, self.depth)[1]
+        value, action = self.negamax(agent, state, self.depth)
+        return action
 
-    def negamax(self, agent, gameState, depth, color=1):
-        # Now, for all the legal actions of the agent, we need to recurse
-        # and select the negamax of them. This is for the next agent.
+    def negamax(self, agent, gameState, depth):
+        """
+        Computes minimax strategy of depth using the negamax algorithm. Note
+        that the strategy used as a heuristic (self.nested) is applied to the
+        agent with index (agent.index + depth) % numAgents. This is an adversary
+        if depth % 2 = 1.
+        """
+        # Select the next agent
         nextIndex = (agent.index + 1) % gameState.getNumAgents()
         nextAgent = agent.opponents[agent.getOpponents(gameState).index(nextIndex)]
-        score, actions = -float('inf'), []
-        
+        color = 1 - 2 * (depth % 2)
+
         # Get the current position, as well as the estimated position if
         # the current is null. Update state for future recursions
-        previous = gameState.getAgentState(nextIndex).copy()
-        if not previous.getPosition():
-            estimated = agent.tracker.getBeliefDistribution(nextIndex).argMax()
+        previous = gameState.getAgentState(agent.index).copy()
+        if previous.getPosition() is None:
+            estimated = agent.tracker.getBeliefDistribution(agent.index).argMax()
             conf = game.Configuration(estimated, game.Directions.STOP)
-            gameState.data.agentStates[nextIndex] = game.AgentState(conf, False)
+            gameState.data.agentStates[agent.index] = game.AgentState(conf, previous.isPacman)
 
+        # Instead of performing negamax here, we perform a probablistic
+        # computation. We know the move distribution that we will make here, and
+        # as a result, we calculate the weighted average of the moves
+        moves = util.Counter()
         for a in gameState.getLegalActions(agent.index):
-            # If the depth limit is reached, or the game is over, then evaluate
-            # the state. Otherwise, recurse.
             if depth == 0 or gameState.isOver():
                 val = self.nested.evaluate(agent, gameState, a)
-                val *= color
+                moves[a] = val * color
             else:
-                succ = gameState.geneateSuccessor(agent.index, a)
-                val, _ = self.negamax(nextAgent, succ, depth-1, -color) 
-                val *= -1
-            
-            if score < val:
-                actions = [a]
-            elif score == val:
-                actions.append(a)
-
-        # Restore the game state and return the max. If ties, choose randomly
+                # TODO we can use alphabeta pruning to speed this up
+                nextState = self.getSuccessor(agent, gameState, a)
+                val, _ = self.negamax(nextAgent, nextState, depth-1)
+                moves[a] = -val
+ 
+        # Now we compute the maximum scoring move as well as its score and
+        # return. We could attempt to enrich this process using some sort of
+        # expectimax.
         gameState.data.agentStates[agent.index] = previous
-        return score, random.choice(actions)
+        return max((y, x) for x, y in moves.items())
 
 class Feature(Strategy):
     """

@@ -5,19 +5,11 @@ import time
 import util
 import game
 import captureAgents
+import keyboardAgents
 
 import board
 import tracking
 import strategy
-
-class Wrapper:
-    """
-    This class wraps another class and uses the provided fields. This is useful
-    for creating a proxy with slightly different functionalities.
-    """
-    def __init__(self, obj, **kwargs):
-        self.__dict__ = obj.__dict__.copy()
-        self.__dict__.update(kwargs)
 
 class TrackingAgent(captureAgents.CaptureAgent):
     """
@@ -60,6 +52,11 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
         return action
 
+    def getDistribution(self, gameState):
+        dist = util.Counter()
+        dist[self.chooseAction(gameState)] = 1.0
+        return dist
+
     def final(self, gameState):
         "This gets run after the game is finished. This might be useful."
         
@@ -99,6 +96,22 @@ class TrackingAgent(captureAgents.CaptureAgent):
                 dists[a] = self.tracker.getBeliefDistribution(a)
             self.displayDistributionsOverPositions(dists)
 
+class KeyboardAgent(keyboardAgents.KeyboardAgent, TrackingAgent):
+    """
+    Useful as an interface between our code and the keyboard agent class. This
+    is necessary to make strategies work correctly.
+    """
+    def __init__(self, index, factory, debug=True):
+        keyboardAgents.KeyboardAgent.__init__(self, index)
+        TrackingAgent.__init__(self, index, factory, debug)
+        self.factory = factory
+        self.team = factory.team
+        self.opponents = factory.opponents
+        self.board = factory.board
+        self.debug = debug
+
+        print "A", "registerInitialState" in dir(self)
+
 class LearningAgent(TrackingAgent):
     """
     Given a nested agent, this agent acts as a proxy and attempts to learn a
@@ -106,19 +119,20 @@ class LearningAgent(TrackingAgent):
     uses to extract the weights and calculates which move it would make. Then it
     calls the nested agents getAction. Using this, it updates the weight vector.
     """
-    def __init__(self, nested, weights):
+    def __init__(self, nested, weights, strategy):
         self.__dict__ = nested.__dict__.copy()
-        # self.nested = nested
+        self.nested = nested
         self.weights = util.Counter(weights) if weights else util.Counter()
+        self.strategy = strategy
         self.legalMoves = ['Stop', 'North', 'South', 'East', 'West']
 
-    def chooseAction(self, gameState):
+    def getAction(self, gameState):
         """
         This method calls the internal agents method, and ultimately uses this
         to move, but uses the result to learn the agents weights.
         """
-        correct = TrackingAgent.chooseAction(self, gameState)
-        data = {a: self.strategy.getFeatures(self, gameState, a)
+        correct = self.nested.getAction(gameState)
+        data = {a: self.strategy.getFeatures(self.nested, gameState, a)
                 for a in gameState.getLegalActions(self.index)}
         result, action = max(data.items(), key=lambda (_,x): x * self.weights)
 

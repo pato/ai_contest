@@ -8,6 +8,7 @@ import game
 import pacman
 import captureAgents
 import ghostAgents
+import keyboardAgents
 
 # Team
 import board
@@ -38,8 +39,13 @@ class Factory(captureAgents.AgentFactory):
 
         # By default don't debug, learn, or use negamax
         self.debug = ast.literal_eval(args.get('debug', 'False'))
+        self.depth = ast.literal_eval(args.get('depth', '0'))
+        self.keys = ast.literal_eval(args.get('keys', '[]'))
+
+        # Specify if we should learn and what weights to begin with
         self.learn = ast.literal_eval(args.get('learn', '[]'))
-        self.ahead = ast.literal_eval(args.get('negamax', '0'))
+        learnString = re.sub("\|", ",", args.get('learnWeights', '{}'))
+        self.learnWeights = ast.literal_eval(learnString)
 
         # Only use weights if provided
         offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
@@ -58,10 +64,17 @@ class Factory(captureAgents.AgentFactory):
     def getAgent(self, index):
         "Build an agent"
         # Debug if the commandline parameter is set
-        agent = agents.TrackingAgent(index, self, self.debug)
+        if index in self.keys:
+            # Do we need more checks?
+            print "Keyboard Agent"
+            agent = agents.KeyboardAgent(index, self, self.debug)
+        else:
+            print "Tracking Agent"
+            agent = agents.TrackingAgent(index, self, self.debug)
+        
         if index in self.learn:
             # If we are to learn, then we wrap the agent in a learning agent
-            agent = agents.LearningAgent(agent)
+            agent = agents.LearningAgent(agent, self.learnWeights, strategy.Offensive())
         self.team.append(agent)
         return agent
 
@@ -85,7 +98,6 @@ class Factory(captureAgents.AgentFactory):
                 self.opponents.append(ghost)
                 self.particleFilter.addGhostAgent(ghost)
 
-
         # Create the marginal particle filter for the agent
         agent.tracker = tracking.Tracker(
                 self.particleFilter, gameState, agent)
@@ -93,9 +105,9 @@ class Factory(captureAgents.AgentFactory):
         # Set the agent's strategy.
         if agent.index in map(agents.TrackingAgent.getIndex, self.team):
             current = self.strategies.next()()
-            if self.ahead:
+            if self.depth:
                 # If we want look ahead, then wrap the strategy in a negamax
-                current = strategy.Negamax(current)
+                current = strategy.Negamax(current, self.depth)
             agent.setStrategy(current)
 
 
