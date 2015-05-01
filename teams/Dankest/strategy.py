@@ -212,6 +212,7 @@ class Defensive(Feature):
         feature.onDefense(agent, successor, features)
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
+        feature.invaderDistance(agent, successor, features)
 
         # Features specifically concerning moves
         state = gameState.getAgentState(agent.index)
