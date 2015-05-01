@@ -16,14 +16,15 @@ import (
 )
 
 const NUM_TRIALS = 8
-const NUM_GENERATIONS = 1000
+const NUM_TRIALSPERSTRAND = 10
+const NUM_GENERATIONS = 1
 const NUM_STEPS = 2000
 const TRAIN_OFFENSE = true
 
 type Trial struct {
 	trial  int
 	winner string
-	score  int
+	score  float64
 }
 
 type ByScore []Trial
@@ -144,41 +145,46 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	fmt.Printf("%d - %s\n", index, weightstring)
 	stepstring := strconv.Itoa(NUM_STEPS)
 
-	// Run the simulator
-	cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
+	scoreSum := 0.0
 
-	err = cmd.Start()
-	if err != nil {
-		log.Fatal("START FAILED")
-		log.Fatal(err)
-	}
-	b := make([]byte, 2000)
-	n, err := io.ReadFull(stdout, b)
-	s := string(b[:n])
-	err = cmd.Wait()
-	if err != nil {
-		log.Fatal("WAIT FAILED")
-		log.Fatal(err)
-	}
-
-	// Get the results
-	lines := strings.Split(s, "\n")
-	result := lines[len(lines)-2]
-	if result == "Tie game!" {
-		/* We have a tie */
-		c <- Trial{index, "tie", 0}
-	} else {
-		/* We have a winner */
-		f := func(c rune) bool {
-			return unicode.IsSpace(c)
+	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
+		// Run the simulator
+		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Fatal(err)
 		}
-		words := strings.FieldsFunc(result, f)
-		team := words[0]
-		score, _ := strconv.ParseInt(words[1], 10, 32)
-		c <- Trial{index, team, int(score)}
+
+		err = cmd.Start()
+		if err != nil {
+			log.Fatal("START FAILED")
+			log.Fatal(err)
+		}
+		b := make([]byte, 2000)
+		n, err := io.ReadFull(stdout, b)
+		s := string(b[:n])
+		err = cmd.Wait()
+		if err != nil {
+			log.Fatal("WAIT FAILED")
+			log.Fatal(err)
+		}
+
+		// Get the results
+		lines := strings.Split(s, "\n")
+		result := lines[len(lines)-2]
+		if result == "Tie game!" {
+			/* We have a tie */
+			scoreSum += 0
+		} else {
+			/* We have a winner */
+			f := func(c rune) bool {
+				return unicode.IsSpace(c)
+			}
+			words := strings.FieldsFunc(result, f)
+			score, _ := strconv.ParseInt(words[1], 10, 32)
+			scoreSum += float64(score)
+		}
 	}
+	score := scoreSum / NUM_TRIALSPERSTRAND
+	c <- Trial{index, "", score}
 }
