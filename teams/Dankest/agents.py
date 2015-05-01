@@ -10,6 +10,15 @@ import board
 import tracking
 import strategy
 
+class Wrapper:
+    """
+    This class wraps another class and uses the provided fields. This is useful
+    for creating a proxy with slightly different functionalities.
+    """
+    def __init__(self, obj, **kwargs):
+        self.__dict__ = obj.__dict__.copy()
+        self.__dict__.update(kwargs)
+
 class TrackingAgent(captureAgents.CaptureAgent):
     """
     This is the 'basic' agent. It implements tracking and intefaces with the
@@ -97,10 +106,10 @@ class LearningAgent(TrackingAgent):
     uses to extract the weights and calculates which move it would make. Then it
     calls the nested agents getAction. Using this, it updates the weight vector.
     """
-    def __init__(self, nested):
+    def __init__(self, nested, weights):
         self.__dict__ = nested.__dict__.copy()
         # self.nested = nested
-        self.weights = util.Counter()
+        self.weights = util.Counter(weights) if weights else util.Counter()
         self.legalMoves = ['Stop', 'North', 'South', 'East', 'West']
 
     def chooseAction(self, gameState):
