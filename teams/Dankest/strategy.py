@@ -221,8 +221,8 @@ class Defensive(Feature):
         # Features specifically concerning moves
         state = gameState.getAgentState(agent.index)
         rev = game.Directions.REVERSE[state.configuration.direction]
-        if action == game.Directions.STOP: features['stop'] = 1.0
-        if action == rev: features['reverse'] = 1.0
+        if action == game.Directions.STOP: features['dontStop'] = 1.0
+        if action == rev: features['dontReverse'] = 1.0
 
         # Return feature dictionary
         return features
