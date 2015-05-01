@@ -50,7 +50,7 @@ func main() {
 	var defaultDWeights = make(map[string]float64)
 	var defaultWeights map[string]float64
 
-	// Read the default weights
+	/* Read the default weights */
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		words := strings.FieldsFunc(scanner.Text(), f)
@@ -66,22 +66,22 @@ func main() {
 		}
 	}
 
-	// Copy over the map to each trial
+	/* Copy over the map to each trial */
 	for i := 0; i < NUM_TRIALS; i++ {
 		trials[i] = make(map[string]float64)
 		for k, v := range defaultOWeights {
-			// copy over the default map
+			/* copy over the default map */
 			trials[i][k] = v
 		}
 	}
 
+	/* Run the generations */
 	for generation := 0; generation < NUM_GENERATIONS; generation++ {
-		// Run a generation
 		log.Printf("Starting %dth generation", generation)
 		results := make(chan Trial)
 
 		for i := 0; i < NUM_TRIALS; i++ {
-			// Perform some random permutations
+			/* Perform some random permutations */
 			for k, v := range trials[i] {
 				permute := rand.Float64() > 0.5
 				if permute {
@@ -89,7 +89,7 @@ func main() {
 				}
 			}
 
-			// Run the trial
+			/* Run the trial */
 			if TRAIN_OFFENSE {
 				go trial(i, trials[i], defaultDWeights, results)
 			} else {
@@ -97,7 +97,7 @@ func main() {
 			}
 		}
 
-		// Get the Trial results
+		/* Get the Trial results */
 		trialResults := make([]Trial, 8)
 		for i := 0; i < NUM_TRIALS; i++ {
 			trialResults[i] = <-results
@@ -106,7 +106,7 @@ func main() {
 		sort.Sort(ByScore(trialResults))
 		log.Println(trialResults)
 
-		// Marry the top 4 results to generate new ones (and the first and second with the fifth to get eight trials)
+		/* Marry the top 4 results to generate new ones (and the first and second with the fifth to get eight trials) */
 		marryTrials(trials, 0, 1, 2)
 		marryTrials(trials, 1, 1, 3)
 		marryTrials(trials, 2, 1, 4)
@@ -116,10 +116,6 @@ func main() {
 		marryTrials(trials, 6, 1, 5)
 		marryTrials(trials, 7, 2, 5)
 
-		//	for generation := 0; ; generation++ {
-		//		log.Printf("Starting %dth generation", generation)
-		//		/* Iteration */
-		//	}
 	}
 }
 
