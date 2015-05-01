@@ -162,6 +162,11 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
 		fmt.Println(cmd)
 		stdout, err := cmd.StdoutPipe()
+		cmd.Stderr = os.Stderr
+		if err != nil {
+			log.Fatal(err)
+		}
+		//stderr, err := cmd.StderrPipe()
 		if err != nil {
 			log.Fatal(err)
 		}
