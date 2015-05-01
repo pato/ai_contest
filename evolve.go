@@ -141,15 +141,17 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	oweightstring := string(oweightbytes)
 	oweightstring = strings.Replace(oweightstring, "\"", "'", -1)
 	oweightstring = strings.Replace(oweightstring, ",", "|", -1)
-	oweightstring = fmt.Sprintf("\"offensiveWeights=%s\"", oweightstring)
-	fmt.Printf("%d - %s\n", index, oweightstring)
+	oweightstring = fmt.Sprintf("offensiveWeights=%s", oweightstring)
+	//fmt.Printf("%d - %s\n", index, oweightstring)
 
 	dweightbytes, _ := json.Marshal(dweights)
 	dweightstring := string(dweightbytes)
 	dweightstring = strings.Replace(dweightstring, "\"", "'", -1)
 	dweightstring = strings.Replace(dweightstring, ",", "|", -1)
-	dweightstring = fmt.Sprintf("\"defensiveWeights=%s\"", dweightstring)
+	dweightstring = fmt.Sprintf("defensiveWeights=%s", dweightstring)
 	//fmt.Sprintf("\"defensiveWeights=%s\"", dweightstring)
+
+	weightstring := "\"" + oweightstring + "," + dweightstring + "\""
 
 	stepstring := strconv.Itoa(NUM_STEPS)
 
@@ -157,7 +159,8 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
-		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", oweightstring)
+		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
+		fmt.Println(cmd)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Fatal(err)
