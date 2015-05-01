@@ -17,7 +17,7 @@ import (
 
 const NUM_TRIALS = 8
 const NUM_TRIALSPERSTRAND = 10
-const NUM_GENERATIONS = 1
+const NUM_GENERATIONS = 1000
 const NUM_STEPS = 2000
 const TRAIN_OFFENSE = true
 
@@ -185,6 +185,6 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 			scoreSum += float64(score)
 		}
 	}
-	score := scoreSum / NUM_TRIALSPERSTRAND
-	c <- Trial{index, "", score}
+	//score := scoreSum / NUM_TRIALSPERSTRAND
+	c <- Trial{index, "", scoreSum}
 }
