@@ -137,19 +137,27 @@ func marryTrials(trials [NUM_TRIALS]map[string]float64, dest, dad, mom int) {
 
 func trial(index int, oweights map[string]float64, dweights map[string]float64, c chan Trial) {
 
-	weightbytes, _ := json.Marshal(oweights)
-	weightstring := string(weightbytes)
-	weightstring = strings.Replace(weightstring, "\"", "'", -1)
-	weightstring = strings.Replace(weightstring, ",", "|", -1)
-	weightstring = fmt.Sprintf("\"offensiveWeights=%s\"", weightstring)
-	fmt.Printf("%d - %s\n", index, weightstring)
+	oweightbytes, _ := json.Marshal(oweights)
+	oweightstring := string(oweightbytes)
+	oweightstring = strings.Replace(oweightstring, "\"", "'", -1)
+	oweightstring = strings.Replace(oweightstring, ",", "|", -1)
+	oweightstring = fmt.Sprintf("\"offensiveWeights=%s\"", oweightstring)
+	fmt.Printf("%d - %s\n", index, oweightstring)
+
+	dweightbytes, _ := json.Marshal(dweights)
+	dweightstring := string(dweightbytes)
+	dweightstring = strings.Replace(dweightstring, "\"", "'", -1)
+	dweightstring = strings.Replace(dweightstring, ",", "|", -1)
+	dweightstring = fmt.Sprintf("\"defensiveWeights=%s\"", dweightstring)
+	//fmt.Sprintf("\"defensiveWeights=%s\"", dweightstring)
+
 	stepstring := strconv.Itoa(NUM_STEPS)
 
 	scoreSum := 0.0
 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
-		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
+		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", oweightstring)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Fatal(err)
