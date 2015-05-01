@@ -104,7 +104,7 @@ func main() {
 		}
 
 		sort.Sort(ByScore(trialResults))
-		log.Println(trialResults)
+		fmt.Println(trialResults)
 
 		/* Marry the top 4 results to generate new ones (and the first and second with the fifth to get eight trials) */
 		marryTrials(trials, 0, 1, 2)
