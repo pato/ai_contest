@@ -5,6 +5,7 @@ import re
 
 # Game
 import game
+import pacman
 import captureAgents
 import ghostAgents
 
@@ -35,34 +36,31 @@ class Factory(captureAgents.AgentFactory):
         # Currently makes one ghost offensive and one defensive
         self.strategies = itertools.cycle([strategy.Offensive, strategy.Defensive])
 
-        # By default don't debug or learn
+        # By default don't debug, learn, or use negamax
         self.debug = ast.literal_eval(args.get('debug', 'False'))
         self.learn = ast.literal_eval(args.get('learn', '[]'))
+        self.ahead = ast.literal_eval(args.get('negamax', '0'))
 
         # Only use weights if provided
         offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
         defString = re.sub("\|", ",", args.get('defensiveWeights', '{}'))
-
         self.offensiveFeatureWeights = ast.literal_eval(offString)
         self.defensiveFeatureWeights = ast.literal_eval(defString)
         
         if self.offensiveFeatureWeights:
-            print "Passed off weights"
             strategy.Offensive.weights = self.offensiveFeatureWeights
             strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
         
         if self.defensiveFeatureWeights:
-            print "Passed def weights"
             strategy.Defensive.weights = self.defensiveFeatureWeights
             strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
 
     def getAgent(self, index):
         "Build an agent"
-        # If the weights are None, then don't display belief clouds
+        # Debug if the commandline parameter is set
         agent = agents.TrackingAgent(index, self, self.debug)
         if index in self.learn:
             # If we are to learn, then we wrap the agent in a learning agent
-            print "Build learning"
             agent = agents.LearningAgent(agent)
         self.team.append(agent)
         return agent
@@ -89,13 +87,16 @@ class Factory(captureAgents.AgentFactory):
 
 
         # Create the marginal particle filter for the agent
-        agent.tracker = tracking.NaiveTracker(
+        agent.tracker = tracking.Tracker(
                 self.particleFilter, gameState, agent)
 
         # Set the agent's strategy.
         if agent.index in map(agents.TrackingAgent.getIndex, self.team):
-            current = self.strategies.next()
-            agent.setStrategy(current())
+            current = self.strategies.next()()
+            if self.ahead:
+                # If we want look ahead, then wrap the strategy in a negamax
+                current = strategy.Negamax(current)
+            agent.setStrategy(current)
 
 
 

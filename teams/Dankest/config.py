@@ -42,6 +42,6 @@ AgentFactory = 'factory.Factory'
 
 Partners = ['Liam Eagen','Pato Lankenau']
 
-AgentArgs = {'policy': 'Balanced', 'offensiveWeights': '{}', 'defensiveWeights': '{}'}
+AgentArgs = {'offensiveWeights': '{}', 'defensiveWeights': '{}'}
 
 NotifyList = []

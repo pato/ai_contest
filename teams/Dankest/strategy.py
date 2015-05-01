@@ -3,7 +3,10 @@ import itertools
 
 import util
 import game
+import capture
+import pacman
 
+import agents
 import board
 import tracking
 import feature
@@ -56,6 +59,55 @@ class Random(Strategy):
     def __call__(self, agent, gameState):
         "Selects a random legal action"
         return random.choice(Strategy.getPossibleActions(agent, gameState))
+
+class Negamax(Strategy):
+    """
+    Computes the move by traversing the tree of states using negamax. This
+    algorithm is equivalent to minimax, but it is easier to implement and also
+    has a cool name. It uses the internal strategy to compute the heuristic.
+    """
+    def __init__(self, nested, depth=3):
+        self.nested = nested
+        self.depth = depth
+
+    def __call__(self, agent, gameState):
+        state = capture.GameState(gameState)
+        return self.negamax(agent, state, agent.index, self.depth)[1]
+
+    def negamax(self, agent, gameState, depth, color=1):
+        # Now, for all the legal actions of the agent, we need to recurse
+        # and select the negamax of them. This is for the next agent.
+        nextIndex = (agent.index + 1) % gameState.getNumAgents()
+        nextAgent = agent.opponents[agent.getOpponents(gameState).index(nextIndex)]
+        score, actions = -float('inf'), []
+        
+        # Get the current position, as well as the estimated position if
+        # the current is null. Update state for future recursions
+        previous = gameState.getAgentState(nextIndex).copy()
+        if not previous.getPosition():
+            estimated = agent.tracker.getBeliefDistribution(nextIndex).argMax()
+            conf = game.Configuration(estimated, game.Directions.STOP)
+            gameState.data.agentStates[nextIndex] = game.AgentState(conf, False)
+
+        for a in gameState.getLegalActions(agent.index):
+            # If the depth limit is reached, or the game is over, then evaluate
+            # the state. Otherwise, recurse.
+            if depth == 0 or gameState.isOver():
+                val = self.nested.evaluate(agent, gameState, a)
+                val *= color
+            else:
+                succ = gameState.geneateSuccessor(agent.index, a)
+                val, _ = self.negamax(nextAgent, succ, depth-1, -color) 
+                val *= -1
+            
+            if score < val:
+                actions = [a]
+            elif score == val:
+                actions.append(a)
+
+        # Restore the game state and return the max. If ties, choose randomly
+        gameState.data.agentStates[agent.index] = previous
+        return score, random.choice(actions)
 
 class Feature(Strategy):
     """
