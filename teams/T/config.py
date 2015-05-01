@@ -35,7 +35,7 @@ Settings:
 
 """
 # Alpha-Numeric only
-TeamName = 'Team'
+TeamName = 'T'
 
 # Filename.FactoryClassName (CASE-sensitive)
 AgentFactory = 'factory.Factory'
