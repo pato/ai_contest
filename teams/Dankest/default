@@ -18,3 +18,4 @@ dontReverse -8.0
 dontStop -100.0
 feasts 0.0
 numInvaders -10.0
+ourFoodDistances -2.0
