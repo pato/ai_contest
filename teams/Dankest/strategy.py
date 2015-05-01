@@ -114,6 +114,9 @@ class Negamax(Strategy):
         # Now we compute the maximum scoring move as well as its score and
         # return. We could attempt to enrich this process using some sort of
         # expectimax.
+        if depth == self.depth:
+            print moves
+
         gameState.data.agentStates[agent.index] = previous
         return max((y, x) for x, y in moves.items())
 
@@ -209,6 +212,7 @@ class Defensive(Feature):
 
         # The features that Defensive strategy considers
         feature.pacmanDistance(agent, successor, features)
+        feature.ourFoodDistances(agent, successor, features)
         feature.onDefense(agent, successor, features)
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
