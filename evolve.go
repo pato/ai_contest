@@ -151,7 +151,7 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	dweightstring = fmt.Sprintf("defensiveWeights=%s", dweightstring)
 	//fmt.Sprintf("\"defensiveWeights=%s\"", dweightstring)
 
-	weightstring := "\"" + oweightstring + "," + dweightstring + "\""
+	weightstring := "" + oweightstring + "," + dweightstring + ""
 
 	stepstring := strconv.Itoa(NUM_STEPS)
 
@@ -160,7 +160,6 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
 		cmd := exec.Command("python2", "capture.py", "-r", "Dankest", "-z", "0.5", "-i", stepstring, "-Q", "-k", "2", "--redOpts", weightstring)
-		fmt.Println(cmd)
 		stdout, err := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
 		if err != nil {
