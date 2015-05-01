@@ -13,6 +13,10 @@ def getFoodDistances(agent, successor, position):
     food = agent.getFood(successor).asList()
     return [agent.getMazeDistance(position, f) for f in food]
 
+def getOurFoodDistances(agent, successor, position):
+    ourFood = agent.getFood(successor).asList()
+    return [agent.getMazeDistance(position, f) for f in ourFood]
+
 def getGhostDistances(agent, successor, position):
     ghosts = (g.argMax() for g in agent.tracker.getBeliefIterable())
     ghosts = (g for g in ghosts if agent.otherSide(successor, g))
@@ -73,6 +77,12 @@ def foodDistance(agent, successor, features=util.Counter()):
     "Calculates the distance to the closest food"
     position = successor.getAgentPosition(agent.index)
     features['foodDistance'] = min(getFoodDistances(agent, successor, position))
+    return features
+
+def ourFoodDistances(agent, successor, features=util.Counter()):
+    "The sum of the distances to our food"
+    position = successor.getAgentPosition(agent.index)
+    features['ourFoodDistances'] = sum(getOurFoodDistances(agent,successor,position))
     return features
 
 def ghostDistance(agent, successor, features=util.Counter()):

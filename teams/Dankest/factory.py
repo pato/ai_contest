@@ -36,6 +36,7 @@ class Factory(captureAgents.AgentFactory):
 
         # Currently makes one ghost offensive and one defensive
         self.strategies = itertools.cycle([strategy.Offensive, strategy.Defensive])
+        self.strategies.next()
 
         # By default don't debug, learn, or use negamax
         self.debug = ast.literal_eval(args.get('debug', 'False'))
@@ -50,6 +51,8 @@ class Factory(captureAgents.AgentFactory):
         # Only use weights if provided
         offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
         defString = re.sub("\|", ",", args.get('defensiveWeights', '{}'))
+        print defString
+        
         self.offensiveFeatureWeights = ast.literal_eval(offString)
         self.defensiveFeatureWeights = ast.literal_eval(defString)
         
