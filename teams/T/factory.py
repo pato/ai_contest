@@ -34,19 +34,19 @@ class Factory(captureAgents.AgentFactory):
         self.team, self.opponents = [], []
         self.init = False
 
-        # Currently makes one ghost offensive and one defensive
-        self.strategies = itertools.cycle([strategy.Offensive, strategy.Defensive])
-        self.strategies.next()
-
         # By default don't debug, learn, or use negamax
         self.debug = ast.literal_eval(args.get('debug', 'False'))
         self.depth = ast.literal_eval(args.get('depth', '0'))
-        self.keys = ast.literal_eval(args.get('keys', '[]'))
-
-        # Specify if we should learn and what weights to begin with
-        self.learn = ast.literal_eval(args.get('learn', '[]'))
-        learnString = re.sub("\|", ",", args.get('learnWeights', '{}'))
-        self.learnWeights = ast.literal_eval(learnString)
+        
+        # Get the options for the first and second agents
+        fst = ast.literal_eval(re.sub("\|", ",", args.get('first','{}')))
+        snd = ast.literal_eval(re.sub("\|", ",", args.get('second','{}')))
+        
+        fst['index'] = 0
+        snd['index'] = 1
+        self.options = itertools.cycle([fst, snd])
+        self.defaults = ['ContestOffensive', 'ContestDefensive']
+        self.strategies = []
 
         # Only use weights if provided
         offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
@@ -57,27 +57,33 @@ class Factory(captureAgents.AgentFactory):
         self.defensiveFeatureWeights = ast.literal_eval(defString)
         
         if self.offensiveFeatureWeights:
-            strategy.Offensive.weights = self.offensiveFeatureWeights
+            strategy.ContestOffensive.weights = self.offensiveFeatureWeights
             strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
         
         if self.defensiveFeatureWeights:
-            strategy.Defensive.weights = self.defensiveFeatureWeights
+            strategy.ContestDefensive.weights = self.defensiveFeatureWeights
             strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
 
     def getAgent(self, index):
+        print index
         "Build an agent"
-        # Debug if the commandline parameter is set
-        if index in self.keys:
-            # Do we need more checks?
-            print "Keyboard Agent"
+        opt = self.options.next()
+        idx = opt['index']
+        lrn = getattr(strategy, opt.get('learn', ''), None)
+        stt = opt.get('strategy', self.defaults[idx % 2])
+        self.strategies.append(stt)
+        
+        # Build the agent
+        if stt in ['keys', 'Keys', 'keyboard', 'Keyboard']:
             agent = agents.KeyboardAgent(index, self, self.debug)
         else:
-            print "Tracking Agent"
             agent = agents.TrackingAgent(index, self, self.debug)
         
-        if index in self.learn:
-            # If we are to learn, then we wrap the agent in a learning agent
-            agent = agents.LearningAgent(agent, self.learnWeights, strategy.Offensive())
+        # Wrap in a learning agent otherwise
+        if lrn:
+            agent = agents.LearningAgent(agent, lrn())
+        
+        # Record agent
         self.team.append(agent)
         return agent
 
@@ -94,7 +100,6 @@ class Factory(captureAgents.AgentFactory):
             for g in oppIndex:
                 ghost = agents.StrategicGhost(g, self, 0.5)
                 ghost.registerInitialState(gameState)
-                #ghost.strategy = strategy.BaselineAdaptive()
                 ghost.strategy = strategy.Random()
                 ghost.tracker = tracking.GhostTracker(
                         self.particleFilter, gameState, ghost)
@@ -106,12 +111,17 @@ class Factory(captureAgents.AgentFactory):
                 self.particleFilter, gameState, agent)
 
         # Set the agent's strategy.
-        if agent.index in map(agents.TrackingAgent.getIndex, self.team):
-            current = self.strategies.next()()
+        if agent.index in map(lambda x: x.index, self.team):
+            # Build strategy
+            current = getattr(strategy, self.strategies.pop(), strategy.ContestOffensive)
+            current = current()
+            
+            # If we want look ahead, then wrap the strategy in a negamax
             if self.depth:
-                # If we want look ahead, then wrap the strategy in a negamax
                 current = strategy.Negamax(current, self.depth)
-            agent.setStrategy(current)
+            
+            # Set the agent's strategy
+            agent.strategy = current
 
 
 
