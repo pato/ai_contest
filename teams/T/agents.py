@@ -132,7 +132,6 @@ class LearningAgent:
         result, action = max(data.items(), key=lambda (_,x): x * self.weights)
 
         if action != correct:
-            print "Updating"
             self.weights += data[correct]
             self.weights -= data[result]
         
@@ -146,6 +145,24 @@ class LearningAgent:
 
     def final(self, gameState):
         print "Learned weights", self.weights
+
+class ReplayAgent(TrackingAgent):
+    """
+    This agent takes a stream of actions and performs them sequentially. This is
+    particularly useful for replaying a prerecorded game. This agent can then be
+    wrapped by a LearningAgent to learn from a recorded game.
+    """
+    def __init__(self, index, factory, actions, debug=True):
+        TrackingAgent.__init__(self, index, factory, debug)
+        self.actions = actions
+
+    def getAction(self, gameState):
+        "Returns the next action. Assumes that the next action exists"
+        i, a = self.actions.next()
+        # print i, self.index, a
+        # if i != self.index:
+        #     raw_input()
+        return a
 
 class StrategicGhost(TrackingAgent):
     """

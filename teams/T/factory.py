@@ -37,13 +37,14 @@ class Factory(captureAgents.AgentFactory):
         # By default don't debug, learn, or use negamax
         self.debug = ast.literal_eval(args.get('debug', 'False'))
         self.depth = ast.literal_eval(args.get('depth', '0'))
-        
+        self.replay = ast.literal_eval(args.get('replay', '""'))
+
         # Get the options for the first and second agents
         fst = ast.literal_eval(re.sub("\|", ",", args.get('first','{}')))
         snd = ast.literal_eval(re.sub("\|", ",", args.get('second','{}')))
         
-        fst['index'] = 0
-        snd['index'] = 1
+        fst['index'] = 0; fst['replay'] = self.replay
+        snd['index'] = 1; snd['replay'] = self.replay
         self.options = itertools.cycle([fst, snd])
         self.defaults = ['ContestOffensive', 'ContestDefensive']
         self.strategies = []
@@ -70,11 +71,19 @@ class Factory(captureAgents.AgentFactory):
         lrn = getattr(strategy, opt.get('learn', ''), None)
         wgt = opt.get('weights', {})
         stt = opt.get('strategy', self.defaults[idx % 2])
+        rpl = opt.get('replay', '')
         self.strategies.append(stt)
         
         # Build the agent
         if stt in ['keys', 'Keys', 'keyboard', 'Keyboard']:
             agent = agents.KeyboardAgent(index, self, self.debug)
+        elif rpl:
+            import cPickle
+            recorded = cPickle.load(open(rpl))
+            actions = recorded["actions"][:]
+            actions = itertools.ifilter(lambda (x,_): x==index, actions)
+            #actions = itertools.imap(lambda (_,x): x, actions)
+            agent = agents.ReplayAgent(index, self, iter(list(actions)), self.debug)
         else:
             agent = agents.TrackingAgent(index, self, self.debug)
         
