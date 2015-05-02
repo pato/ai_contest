@@ -51,7 +51,6 @@ class Factory(captureAgents.AgentFactory):
         # Only use weights if provided
         offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
         defString = re.sub("\|", ",", args.get('defensiveWeights', '{}'))
-        print defString
         
         self.offensiveFeatureWeights = ast.literal_eval(offString)
         self.defensiveFeatureWeights = ast.literal_eval(defString)
@@ -65,11 +64,11 @@ class Factory(captureAgents.AgentFactory):
             strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
 
     def getAgent(self, index):
-        print index
         "Build an agent"
         opt = self.options.next()
         idx = opt['index']
         lrn = getattr(strategy, opt.get('learn', ''), None)
+        wgt = opt.get('weights', {})
         stt = opt.get('strategy', self.defaults[idx % 2])
         self.strategies.append(stt)
         
@@ -81,7 +80,7 @@ class Factory(captureAgents.AgentFactory):
         
         # Wrap in a learning agent otherwise
         if lrn:
-            agent = agents.LearningAgent(agent, lrn())
+            agent = agents.LearningAgent(agent, lrn(), wgt)
         
         # Record agent
         self.team.append(agent)

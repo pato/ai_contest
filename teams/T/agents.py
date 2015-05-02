@@ -114,10 +114,10 @@ class LearningAgent:
     uses to extract the weights and calculates which move it would make. Then it
     calls the nested agents getAction. Using this, it updates the weight vector.
     """
-    def __init__(self, nested, strategy):
+    def __init__(self, nested, strategy, weights={}):
         self.index = nested.index
         self.nested = nested
-        self.weights = util.Counter()
+        self.weights = util.Counter(weights)
         self.strategy = strategy
 
     def getAction(self, gameState):
