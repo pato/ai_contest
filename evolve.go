@@ -17,7 +17,7 @@ import (
 
 const NUM_TRIALS = 8
 const NUM_TRIALSPERSTRAND = 10
-const NUM_GENERATIONS = 1000
+const NUM_GENERATIONS = 25
 const NUM_STEPS = 2000
 const TRAIN_OFFENSE = true
 
@@ -155,11 +155,13 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 
 	stepstring := strconv.Itoa(NUM_STEPS)
 
+	mapstr := "contest03Capture"
+
 	scoreSum := 0.0
 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
-		cmd := exec.Command("python2", "capture.py", "-r", "T", "-z", "0.5", "-i", stepstring, "-Q", "-k", "4", "--redOpts", weightstring)
+		cmd := exec.Command("python2", "capture.py", "-r", "T", "-z", "0.5", "-i", stepstring, "-Q", "-k", "4", "-l", mapstr, "--redOpts", weightstring)
 		stdout, err := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
 		if err != nil {
