@@ -34,6 +34,8 @@ Settings:
     this agent code and design.
 
 """
+import weights
+
 # Alpha-Numeric only
 TeamName = 'T'
 
@@ -42,6 +44,7 @@ AgentFactory = 'factory.Factory'
 
 Partners = ['Liam Eagen','Pato Lankenau']
 
-AgentArgs = {'offensiveWeights': '{}', 'defensiveWeights': '{}'}
+AgentArgs = {'offensiveWeights': str(weights.offensive),
+             'defensiveWeights': str(weights.defensive)}
 
 NotifyList = []

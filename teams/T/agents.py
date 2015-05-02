@@ -69,9 +69,6 @@ class TrackingAgent(captureAgents.CaptureAgent):
     def getPosition(self):
         return self.position
 
-    def getIndex(self):
-        return self.index
-
     def ourSide(self, gameState, position=None):
         "Tests if a position is on our side"
         if position is None:
@@ -110,27 +107,25 @@ class KeyboardAgent(keyboardAgents.KeyboardAgent, TrackingAgent):
         self.board = factory.board
         self.debug = debug
 
-        print "A", "registerInitialState" in dir(self)
-
-class LearningAgent(TrackingAgent):
+class LearningAgent:
     """
     Given a nested agent, this agent acts as a proxy and attempts to learn a
     linear combination of feature weights. It takes a feature strategy, which it
     uses to extract the weights and calculates which move it would make. Then it
     calls the nested agents getAction. Using this, it updates the weight vector.
     """
-    def __init__(self, nested, weights, strategy):
-        self.__dict__ = nested.__dict__.copy()
+    def __init__(self, nested, strategy, weights={}):
+        self.index = nested.index
         self.nested = nested
-        self.weights = util.Counter(weights) if weights else util.Counter()
+        self.weights = util.Counter(weights)
         self.strategy = strategy
-        self.legalMoves = ['Stop', 'North', 'South', 'East', 'West']
 
     def getAction(self, gameState):
         """
         This method calls the internal agents method, and ultimately uses this
         to move, but uses the result to learn the agents weights.
         """
+        self.position = gameState.getAgentPosition(self.index)
         correct = self.nested.getAction(gameState)
         data = {a: self.strategy.getFeatures(self.nested, gameState, a)
                 for a in gameState.getLegalActions(self.index)}
@@ -142,6 +137,12 @@ class LearningAgent(TrackingAgent):
             self.weights -= data[result]
         
         return correct
+
+    def registerInitialState(self, gameState):
+        "Call registerInitialState if it exists"
+        self.position = gameState.getInitialAgentPosition(self.index)
+        if 'registerInitialState' in dir(self.nested):
+            self.nested.registerInitialState(gameState)
 
     def final(self, gameState):
         print "Learned weights", self.weights
