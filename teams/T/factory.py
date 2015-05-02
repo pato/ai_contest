@@ -22,7 +22,7 @@ class Factory(captureAgents.AgentFactory):
     particle filter for tracking the other team, as well an array of agents
     which is used for our agents to communicate amoungst themselves.
     """
-    
+
     """
     This variable is se by the training environment. If it is None, then we
     are not currently training.
@@ -36,30 +36,30 @@ class Factory(captureAgents.AgentFactory):
 
         # By default don't debug, learn, or use negamax
         self.debug = ast.literal_eval(args.get('debug', 'False'))
-        self.depth = ast.literal_eval(args.get('depth', '0'))
         self.replay = ast.literal_eval(args.get('replay', '""'))
 
         # Get the options for the first and second agents
         fst = ast.literal_eval(re.sub("\|", ",", args.get('first','{}')))
         snd = ast.literal_eval(re.sub("\|", ",", args.get('second','{}')))
-        
+
         fst['index'] = 0; fst['replay'] = self.replay
         snd['index'] = 1; snd['replay'] = self.replay
         self.options = itertools.cycle([fst, snd])
         self.defaults = ['ContestOffensive', 'ContestDefensive']
         self.strategies = []
+        self.depths = []
 
         # Only use weights if provided
         offString = re.sub("\|", ",", args.get('offensiveWeights', '{}'))
         defString = re.sub("\|", ",", args.get('defensiveWeights', '{}'))
-        
+
         self.offensiveFeatureWeights = ast.literal_eval(offString)
         self.defensiveFeatureWeights = ast.literal_eval(defString)
-        
+
         if self.offensiveFeatureWeights:
             strategy.ContestOffensive.weights = self.offensiveFeatureWeights
             strategy.BaselineOffensive.weights = self.offensiveFeatureWeights
-        
+
         if self.defensiveFeatureWeights:
             strategy.ContestDefensive.weights = self.defensiveFeatureWeights
             strategy.BaselineDefensive.weights = self.defensiveFeatureWeights
@@ -72,8 +72,10 @@ class Factory(captureAgents.AgentFactory):
         wgt = opt.get('weights', {})
         stt = opt.get('strategy', self.defaults[idx % 2])
         rpl = opt.get('replay', '')
+        dth = opt.get('depth', 0)
         self.strategies.append(stt)
-        
+        self.depths.append(dth)
+
         # Build the agent
         if stt in ['keys', 'Keys', 'keyboard', 'Keyboard']:
             agent = agents.KeyboardAgent(index, self, self.debug)
@@ -82,15 +84,14 @@ class Factory(captureAgents.AgentFactory):
             recorded = cPickle.load(open(rpl))
             actions = recorded["actions"][:]
             actions = itertools.ifilter(lambda (x,_): x==index, actions)
-            #actions = itertools.imap(lambda (_,x): x, actions)
             agent = agents.ReplayAgent(index, self, iter(list(actions)), self.debug)
         else:
             agent = agents.TrackingAgent(index, self, self.debug)
-        
+
         # Wrap in a learning agent otherwise
         if lrn:
             agent = agents.LearningAgent(agent, lrn(), wgt)
-        
+
         # Record agent
         self.team.append(agent)
         return agent
@@ -123,11 +124,12 @@ class Factory(captureAgents.AgentFactory):
             # Build strategy
             current = getattr(strategy, self.strategies.pop(), strategy.ContestOffensive)
             current = current()
-            
+
             # If we want look ahead, then wrap the strategy in a negamax
-            if self.depth:
-                current = strategy.Negamax(current, self.depth)
-            
+            depth = self.depths.pop()
+            if depth:
+                current = strategy.Negamax(current, depth)
+
             # Set the agent's strategy
             agent.strategy = current
 

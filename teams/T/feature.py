@@ -52,7 +52,7 @@ def foodDownPath(agent, predecessor, successor, features=util.Counter()):
 
 
     visited = {oldpos}
-    queue = util.Queue() 
+    queue = util.Queue()
     queue.push(newpos)
     foodCount = 0
 
@@ -68,7 +68,7 @@ def foodDownPath(agent, predecessor, successor, features=util.Counter()):
             for neighbor in legalNeighbors(pos):
                 if goodNeighbor(neighbor):
                     queue.push(neighbor)
-    
+
     features['foodDownPath'] = foodCount
 
     return features
@@ -153,7 +153,7 @@ def feasts(agent, successor, features=util.Counter()):
         if len(feastFoods) > 1:
             feastsFound.extend(feastFoods)
             for f in feastFoods: foods.remove(f)
-            feasts += 1 
+            feasts += 1
     features['feasts'] = feasts
     return features
 

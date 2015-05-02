@@ -59,7 +59,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
 
     def final(self, gameState):
         "This gets run after the game is finished. This might be useful."
-        
+
         #print "Game is over"
 
     def setStrategy(self, strategy):
@@ -134,7 +134,7 @@ class LearningAgent:
         if action != correct:
             self.weights += data[correct]
             self.weights -= data[result]
-        
+
         return correct
 
     def registerInitialState(self, gameState):
@@ -159,9 +159,6 @@ class ReplayAgent(TrackingAgent):
     def getAction(self, gameState):
         "Returns the next action. Assumes that the next action exists"
         i, a = self.actions.next()
-        # print i, self.index, a
-        # if i != self.index:
-        #     raw_input()
         return a
 
 class StrategicGhost(TrackingAgent):

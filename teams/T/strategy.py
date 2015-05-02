@@ -69,11 +69,8 @@ class Negamax(Strategy):
     def __init__(self, nested, depth=3):
         self.nested = nested
         self.depth = depth
-        print self.depth
-        print nested.weights
 
     def __call__(self, agent, gameState):
-        print "Negamax"
         state = capture.GameState(gameState)
         value, action = self.negamax(agent, state, self.depth)
         return action
@@ -103,7 +100,6 @@ class Negamax(Strategy):
         # as a result, we calculate the weighted average of the moves
         moves = util.Counter()
         for act in gameState.getLegalActions(agent.index):
-            print act
             if depth == 0 or gameState.isOver():
                 val = self.nested.evaluate(agent, gameState, act)
                 moves[act] = val * color
@@ -111,17 +107,17 @@ class Negamax(Strategy):
                 nextState = self.getSuccessor(agent, gameState, act)
                 val, _ = self.negamax(nextAgent, nextState, depth-1, -b, -a)
                 moves[act] = -val
-                
+
                 # Alpha-beta pruning
                 a = max(a, -val)
                 if a >= b:
                     break
- 
+
         # Now we compute the maximum scoring move as well as its score and
         # return. We could attempt to enrich this process using some sort of
         # expectimax.
-        if depth == self.depth:
-            print moves
+        # if depth == self.depth:
+        #     print moves
 
         gameState.data.agentStates[agent.index] = previous
         return max((y, x) for x, y in moves.items())
@@ -208,7 +204,7 @@ class ContestDefensive(Feature):
     Our contest defensive agent. This agent is designed to remain on our side
     and find and eat invading the pacman.
     """
-    
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
@@ -233,7 +229,7 @@ class ContestDefensive(Feature):
 class BaselineOffensive(Feature):
     # Similarly, these are just defaults
     weights = {'successorScore': 100, 'distanceToFood': -1}
-    
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
