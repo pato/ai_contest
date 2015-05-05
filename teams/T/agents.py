@@ -47,7 +47,7 @@ class TrackingAgent(captureAgents.CaptureAgent):
         # Write distributions to board for debugging and time
         if self.debug:
             if not isinstance(self, StrategicGhost):
-                print 'eval time for agent %d: %.4f' % (self.index, time.time()-start)
+                print 'eval time for agent %d: %.4f, score: %d' % (self.index, time.time()-start, gameState.getScore())
             self.displayBeliefs(gameState)
 
         return action

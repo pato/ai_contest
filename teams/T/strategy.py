@@ -82,6 +82,7 @@ class Negamax(Strategy):
         agent with index (agent.index + depth) % numAgents. This is an adversary
         if depth % 2 = 1.
         """
+        print "negaMaxing"
         # Select the next agent
         nextIndex = (agent.index + 1) % gameState.getNumAgents()
         nextAgent = agent.opponents[agent.getOpponents(gameState).index(nextIndex)]
@@ -187,11 +188,15 @@ class ContestOffensive(Feature):
         # The features that Offensive strategy considers
         feature.score(agent, successor, features)
         feature.ghostDistance(agent, successor, features)
-        #feature.
+        feature.foodDistance(agent, successor, features)
         feature.bestFoodDistance(agent, successor, features)
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
         feature.foodDownPath(agent, gameState, successor, features)
+        feature.futureScore(agent, successor, features)
+
+        feature.capsuleDistance(agent, successor, features)
+        feature.scaredGhostDistance(agent, successor, features)
 
         if action == 'Stop':
             features['dontStop'] = 1.0
@@ -216,6 +221,7 @@ class ContestDefensive(Feature):
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
         feature.invaderDistance(agent, successor, features)
+        feature.isScared(agent, successor, features)
 
         # Features specifically concerning moves
         state = gameState.getAgentState(agent.index)
