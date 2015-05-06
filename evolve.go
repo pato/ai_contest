@@ -42,12 +42,12 @@ func main() {
 	// }
 	// defer file.Close()
 
-        file := os.Stdin
-        f := func(c rune) bool {
-        	return unicode.IsSpace(c)
-        }
-	
-        var defaultOWeights = make(map[string]float64)
+	file := os.Stdin
+	f := func(c rune) bool {
+		return unicode.IsSpace(c)
+	}
+
+	var defaultOWeights = make(map[string]float64)
 	var defaultDWeights = make(map[string]float64)
 	var defaultWeights map[string]float64
 
@@ -163,7 +163,7 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
 		cmd := exec.Command("python2", "capture.py", "-r", "T", "-z", "0.5", "-i", stepstring, "-Q", "-k", "4", "-l", mapstr, "--redOpts", weightstring)
-                stdout, err := cmd.StdoutPipe()
+		stdout, err := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
 		if err != nil {
 			log.Fatal(err)
