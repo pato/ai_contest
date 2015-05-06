@@ -20,7 +20,7 @@ for more information on this.
 
 #offensive={'agentFoodDistance':-6.032787247064622,'capsuleDistance':-1.4289075858758298,'disperse':2.0644791877194746,'dontStop':-5880.612091187818,'feasts':-1192.269768413758,'foodDownPath':17.033664351999324,'ghostFoodDistance':5.995670599915416,'pacmanDistance':-10.215117832813965,'scaredGhostDistance':-3.7365262839402336,'score':279.78978646778586}
 
-offensive = {'score': 0.0, 'foodDistance': -20.0, 'ghostDistance': 20.0}
+offensive = {'score': 400.0, 'foodDistance': -25.0, 'ghostDistance': 20.0}
 
 #defensive = { 'score': 1.0 }
 defensive = {'pacmanDistance': -50.0, 'onDefense': 100.0, 'disperse': 0.0, 'dontReverse': -8.0, 'dontStop': -100, 'feasts': 0.0}
