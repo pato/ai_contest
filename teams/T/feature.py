@@ -56,7 +56,12 @@ implemented as functions that can be used inside other strategies.
 """
 def score(agent, successor, features=util.Counter()):
     "Calculates the score"
-    features['score'] = agent.getScore(successor)
+    if successor.isOver() and score > 0:
+        # If we are going to win, do not hesitate
+        features['score'] = float('inf')
+    else:
+        features['score'] = agent.getScore(successor)
+
     return features
 
 def foodDownPath(agent, predecessor, successor, features=util.Counter()):
@@ -235,6 +240,9 @@ def invaderDistance(agent, successor, features=util.Counter()):
       features['invaderDistance'] = min(dists)
     return features
 
+def isDeadEnd(agent, gameState, features=util.Counter()):
+    features['isDeadEnd'] = agent.board.isDeadEnd(gameState.getAgentPosition(agent.index))
+    return features
 
 def negamax(agent, gameState, depth, color=1, a=-float('inf'), b=float('inf')):
     """

@@ -20,6 +20,7 @@ class Board:
     def initialize(self, gameState):
         self.walls = gameState.getWalls()
         self.initLegal()
+        self.initDeadEnd()
         #self.initAdjacency()
         #self.initFloydWarshall()
 
@@ -44,6 +45,60 @@ class Board:
         self.dist = [ [ min(self.dist[i][j], self.dist[i][k] + self.dist[k][j])
             for i in lr ] for k,j in itertools.product(lr,lr) ]
 
+    def initDeadEnd(self):
+        """
+        Given the walls, we find all the states that have no cross edges. That
+        is, all the locations that are part of a dead end cannot be escaped if
+        one is being persued by a ghost.
+
+        To do this, we compute tarjan's algorithm and find all the nodes that
+        are part of a strongly connected component of size 1. This will reveal
+        all the nodes which can only be escaped in one way.
+        """
+        # Starting values
+        self.current = 0
+        stack,self.components,self.deadends = [],[],set()
+        index,lowlink = {},{}
+        identified = set()
+
+
+        # Used to calculate the strongly connected components
+        def strongconnect(v):
+            # Init state
+            index[v] = self.current
+            lowlink[v] = self.current
+            self.current += 1
+            stack.append(v)
+
+            # For each edge
+            for w in self.getLegalNeighbors(v):
+                if w not in index:
+                    strongconnect(w)
+                    lowlink[v] = min(lowlink[v], lowlink[w])
+                elif w in identified:
+                    lowlink[v] = min(lowlink[v], index[w])
+
+            # Record the connected component if found
+            if lowlink[v] == index[v]:
+                scc = set(stack[index[v]:])
+                del stack[index[v]:]
+                identified.update(scc)
+                if len(scc) != 0:
+                    self.components.append(scc)
+                if len(scc) == 1:
+                    self.deadends.add(min(scc))
+
+            # Used to thread state (grrr...)
+            return self.current
+
+        # For each vertex
+        for v in self.legal:
+            if v not in index:
+                strongconnect(v)
+        
+        print self.components
+        print self.deadends
+    
     def areAdjacent(self, p, q):
         "Tests if two different points are adjacent"
         a,b = abs(p[0]-q[0]),abs(p[1]-q[1])
@@ -59,6 +114,10 @@ class Board:
 
     def getLegalNeighbors(self, position):
         return game.Actions.getLegalNeighbors(position, self.walls)
+
+    def isDeadEnd(self, position):
+        "Checks if position is dead end"
+        return position in self.deadends
 
     def getDistance(self, p, q):
         "Compute the vertex index, and then distance"
