@@ -69,11 +69,8 @@ class Negamax(Strategy):
     def __init__(self, nested, depth=3):
         self.nested = nested
         self.depth = depth
-        print self.depth
-        print nested.weights
 
     def __call__(self, agent, gameState):
-        print "Negamax"
         state = capture.GameState(gameState)
         value, action = self.negamax(agent, state, self.depth)
         return action
@@ -85,6 +82,7 @@ class Negamax(Strategy):
         agent with index (agent.index + depth) % numAgents. This is an adversary
         if depth % 2 = 1.
         """
+        print "negaMaxing"
         # Select the next agent
         nextIndex = (agent.index + 1) % gameState.getNumAgents()
         nextAgent = agent.opponents[agent.getOpponents(gameState).index(nextIndex)]
@@ -103,7 +101,6 @@ class Negamax(Strategy):
         # as a result, we calculate the weighted average of the moves
         moves = util.Counter()
         for act in gameState.getLegalActions(agent.index):
-            print act
             if depth == 0 or gameState.isOver():
                 val = self.nested.evaluate(agent, gameState, act)
                 moves[act] = val * color
@@ -111,17 +108,17 @@ class Negamax(Strategy):
                 nextState = self.getSuccessor(agent, gameState, act)
                 val, _ = self.negamax(nextAgent, nextState, depth-1, -b, -a)
                 moves[act] = -val
-                
+
                 # Alpha-beta pruning
                 a = max(a, -val)
                 if a >= b:
                     break
- 
+
         # Now we compute the maximum scoring move as well as its score and
         # return. We could attempt to enrich this process using some sort of
         # expectimax.
-        if depth == self.depth:
-            print moves
+        # if depth == self.depth:
+        #     print moves
 
         gameState.data.agentStates[agent.index] = previous
         return max((y, x) for x, y in moves.items())
@@ -191,11 +188,15 @@ class ContestOffensive(Feature):
         # The features that Offensive strategy considers
         feature.score(agent, successor, features)
         feature.ghostDistance(agent, successor, features)
-        #feature.
+        feature.foodDistance(agent, successor, features)
         feature.bestFoodDistance(agent, successor, features)
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
         feature.foodDownPath(agent, gameState, successor, features)
+        feature.futureScore(agent, successor, features)
+
+        feature.capsuleDistance(agent, successor, features)
+        feature.scaredGhostDistance(agent, successor, features)
 
         if action == 'Stop':
             features['dontStop'] = 1.0
@@ -208,7 +209,7 @@ class ContestDefensive(Feature):
     Our contest defensive agent. This agent is designed to remain on our side
     and find and eat invading the pacman.
     """
-    
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)
@@ -220,6 +221,7 @@ class ContestDefensive(Feature):
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
         feature.invaderDistance(agent, successor, features)
+        feature.isScared(agent, successor, features)
 
         # Features specifically concerning moves
         state = gameState.getAgentState(agent.index)
@@ -233,7 +235,7 @@ class ContestDefensive(Feature):
 class BaselineOffensive(Feature):
     # Similarly, these are just defaults
     weights = {'successorScore': 100, 'distanceToFood': -1}
-    
+
     def getFeatures(self, agent, gameState, action):
         features = util.Counter()
         successor = Strategy.getSuccessor(agent, gameState, action)

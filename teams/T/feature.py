@@ -9,18 +9,39 @@ These functions are useful for calculating the distances of pacman and ghosts to
 food. These can then be used to calculate for example, closest food, closest
 ghost, etc.
 """
+def getDistances(agent, position, things):
+    return [agent.getMazeDistance(position, t) for t in things]
+
 def getFoodDistances(agent, successor, position):
     food = agent.getFood(successor).asList()
-    return [agent.getMazeDistance(position, f) for f in food]
+    return getDistances(agent, position, food)
 
 def getOurFoodDistances(agent, successor, position):
     ourFood = agent.getFood(successor).asList()
-    return [agent.getMazeDistance(position, f) for f in ourFood]
+    return getDistances(agent, position, ourFood)
+
+def getCapsuleDistances(agent, successor, position):
+    capsules = agent.getCapsules(successor)
+    return getDistances(agent, position, capsules)
+
+def getOurCapsuleDistances(agent, successor, position):
+    ourCapsules = agent.getCapsulesYouAreDefending(successor)
+    return getDistances(agent, position, ourCapsules)
 
 def getGhostDistances(agent, successor, position):
     ghosts = (g.argMax() for g in agent.tracker.getBeliefIterable())
     ghosts = (g for g in ghosts if agent.otherSide(successor, g))
-    return [agent.getMazeDistance(position, g) for g in ghosts]
+    ghosts = (g for i, g in enumerate(ghosts) if
+            successor.getAgentState(i).scaredTimer == 0)
+
+    return getDistances(agent, position, ghosts)
+
+def getScaredGhostDistances(agent, successor, position):
+    ghosts = (g.argMax() for g in agent.tracker.getBeliefIterable())
+    ghosts = (g for g in ghosts if agent.otherSide(successor, g))
+    ghosts = (g for i, g in enumerate(ghosts) if
+            successor.getAgentState(i).scaredTimer > 0)
+    return getDistances(agent, position, ghosts)
 
 def getPacmanDistances(agent, successor, position):
     ghosts = (g.argMax() for g in agent.tracker.getBeliefIterable())
@@ -52,7 +73,7 @@ def foodDownPath(agent, predecessor, successor, features=util.Counter()):
 
 
     visited = {oldpos}
-    queue = util.Queue() 
+    queue = util.Queue()
     queue.push(newpos)
     foodCount = 0
 
@@ -68,7 +89,7 @@ def foodDownPath(agent, predecessor, successor, features=util.Counter()):
             for neighbor in legalNeighbors(pos):
                 if goodNeighbor(neighbor):
                     queue.push(neighbor)
-    
+
     features['foodDownPath'] = foodCount
 
     return features
@@ -85,14 +106,26 @@ def ourFoodDistances(agent, successor, features=util.Counter()):
     features['ourFoodDistances'] = sum(getOurFoodDistances(agent,successor,position))
     return features
 
+def capsuleDistance(agent, successor, features=util.Counter()):
+    position = successor.getAgentPosition(agent.index)
+    dists = getCapsuleDistances(agent, successor, position)
+    features['capsuleDistance'] = min(dists) if dists else 0.0
+    return features
+
 def ghostDistance(agent, successor, features=util.Counter()):
     "Calculates the distance to the closest ghost"
     position = successor.getAgentPosition(agent.index)
     dists = getGhostDistances(agent, successor, position)
     closestGhost = min(dists) if dists else 0.0
-    closestGhost = 1.0 / closestGhost if closestGhost else 0.0
-
+    # closestGhost = 1.0 / closestGhost if closestGhost else 0.0
     features['ghostDistance'] = closestGhost
+    return features
+
+def scaredGhostDistance(agent, successor, features=util.Counter()):
+    position = successor.getAgentPosition(agent.index)
+    dists = getScaredGhostDistances(agent, successor, position)
+    closestScared = min(dists) if dists else 0.0
+    features['scaredGhostDistance'] = closestScared
     return features
 
 def pacmanDistance(agent, successor, features=util.Counter()):
@@ -100,9 +133,11 @@ def pacmanDistance(agent, successor, features=util.Counter()):
     position = successor.getAgentPosition(agent.index)
     dists = getPacmanDistances(agent, successor, position)
     closestPacman = min(dists) if dists else 0.0
-
     features['pacmanDistance'] = closestPacman
     return features
+
+def isScared(agent, successor, features=util.Counter()):
+    return successor.getAgentState(agent.index).scaredTimer > 0
 
 def bestFoodDistance(agent, successor, features=util.Counter()):
     """
@@ -153,7 +188,7 @@ def feasts(agent, successor, features=util.Counter()):
         if len(feastFoods) > 1:
             feastsFound.extend(feastFoods)
             for f in feastFoods: foods.remove(f)
-            feasts += 1 
+            feasts += 1
     features['feasts'] = feasts
     return features
 
@@ -187,5 +222,57 @@ def invaderDistance(agent, successor, features=util.Counter()):
       dists = [agent.getMazeDistance(successor.getAgentPosition(agent.index),
           a.getPosition()) for a in invaders]
       features['invaderDistance'] = min(dists)
+    return features
+
+
+def negamax(agent, gameState, depth, color=1, a=-float('inf'), b=float('inf')):
+    """
+    Computes minimax strategy of depth using the negamax algorithm. Note
+    that the strategy used as a heuristic (self.nested) is applied to the
+    agent with index (agent.index + depth) % numAgents. This is an adversary
+    if depth % 2 = 1.
+    """
+    # Select the next agent
+    nextIndex = (agent.index + 1) % gameState.getNumAgents()
+    nextAgent = agent.opponents[agent.getOpponents(gameState).index(nextIndex)]
+
+    # Get the current position, as well as the estimated position if
+    # the current is null. Update state for future recursions
+    previous = gameState.getAgentState(agent.index).copy()
+    if previous.getPosition() is None:
+        estimated = agent.tracker.getBeliefDistribution(agent.index).argMax()
+        conf = game.Configuration(estimated, game.Directions.STOP)
+        gameState.data.agentStates[agent.index] = game.AgentState(conf, previous.isPacman)
+
+    # Instead of performing negamax here, we perform a probablistic
+    # computation. We know the move distribution that we will make here, and
+    # as a result, we calculate the weighted average of the moves
+    moves = util.Counter()
+    for act in gameState.getLegalActions(agent.index):
+        if depth == 0 or gameState.isOver():
+            # Assumes we are red
+            val = gameState.getScore()
+            moves[act] = val * color
+        else:
+            nextState = gameState.generateSuccessor(agent.index, act)
+            val, _ = negamax(nextAgent, nextState, depth-1, -color, -b, -a)
+            moves[act] = -val
+
+            # Alpha-beta pruning
+            a = max(a, -val)
+            if a >= b:
+                break
+
+    # Now we compute the maximum scoring move as well as its score and
+    # return. We could attempt to enrich this process using some sort of
+    # expectimax.
+    # if depth == self.depth:
+    #     print moves
+
+    gameState.data.agentStates[agent.index] = previous
+    return max((y, x) for x, y in moves.items())
+
+def futureScore(agent, successor, features=util.Counter(), depth=12):
+    features['futureScore'], _ = negamax(agent, successor, depth)
     return features
 
