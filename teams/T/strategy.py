@@ -190,7 +190,7 @@ class ContestOffensive(Feature):
         feature.ghostDistance(agent, successor, features)
         feature.foodDistance(agent, successor, features)
         feature.capsuleDistance(agent, successor, features)
-#        feature.bestFoodDistance(agent, successor, features)
+        feature.bestFoodDistance(agent, successor, features)
 #        feature.disperse(agent, successor, features)
 #        feature.feasts(agent, successor, features)
 #        feature.foodDownPath(agent, gameState, successor, features)
