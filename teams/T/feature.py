@@ -122,7 +122,9 @@ def ghostDistance(agent, successor, features=util.Counter()):
     position = successor.getAgentPosition(agent.index)
     dists = getGhostDistances(agent, successor, position)
     closestGhost = min(dists) if dists else 0.0
-    # closestGhost = 1.0 / closestGhost if closestGhost else 0.0
+    closestGhost = closestGhost if closestGhost < 10.0 else 0.0
+
+    #closestGhost = 1.0 / closestGhost if closestGhost else 0.0
     features['ghostDistance'] = closestGhost
     return features
 
