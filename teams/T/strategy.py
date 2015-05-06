@@ -189,6 +189,7 @@ class ContestOffensive(Feature):
         feature.score(agent, successor, features)
         feature.ghostDistance(agent, successor, features)
         feature.foodDistance(agent, successor, features)
+        feature.capsuleDistance(agent, successor, features)
 #        feature.bestFoodDistance(agent, successor, features)
 #        feature.disperse(agent, successor, features)
 #        feature.feasts(agent, successor, features)
@@ -196,7 +197,6 @@ class ContestOffensive(Feature):
 #        feature.futureScore(agent, successor, features)
 #        feature.trapped(agent, successor, features)
 
-        feature.capsuleDistance(agent, successor, features)
         feature.scaredGhostDistance(agent, successor, features)
 
         if action == 'Stop':
