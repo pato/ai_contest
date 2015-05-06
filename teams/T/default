@@ -1,15 +1,13 @@
 Offensive
-score 217.0
-ghostDistance 2.0 
-pacmanDistance -7.8
-disperse 3.85
-agentFoodDistance -8.65
-ghostFoodDistance 2.5
-dontStop -10000.0
-feasts -800.0
-foodDownPath 20.0
-scaredGhostDistance -5.0
-capsuleDistance -5.0
+score 1000.0
+ghostDistance -100.0 
+agentFoodDistance -15.0
+capsuleDistance -35.0
+isDeadEnd -1.0
+foodDownPath 40.0
+foodDistance -50.0
+pacmanDistance -0.0
+dontStop -100.0
 
 Defensive
 pacmanDistance -50.0

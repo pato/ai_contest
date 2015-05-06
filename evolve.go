@@ -152,7 +152,7 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	}
 	dweightstring = strings.Replace(dweightstring, ",", "|", -1)
 
-	weightstring := "" + oweightstring + "," + dweightstring + "," + "first={'depth':2}" + ""
+	weightstring := "" + oweightstring + "," + dweightstring + "," + "first={'depth':0}" + ""
 
 	stepstring := strconv.Itoa(NUM_STEPS)
 
@@ -163,6 +163,7 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
 		cmd := exec.Command("python2", "capture.py", "-r", "T", "-z", "0.4", "-i", stepstring, "-k", "4", "-l", mapstr, "--redOpts", weightstring)
+
 		stdout, err := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
 		if err != nil {

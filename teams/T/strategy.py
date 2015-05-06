@@ -191,11 +191,13 @@ class ContestOffensive(Feature):
         feature.foodDistance(agent, successor, features)
         feature.capsuleDistance(agent, successor, features)
         feature.bestFoodDistance(agent, successor, features)
-#        feature.disperse(agent, successor, features)
-#        feature.feasts(agent, successor, features)
-#        feature.foodDownPath(agent, gameState, successor, features)
-#        feature.futureScore(agent, successor, features)
-#        feature.trapped(agent, successor, features)
+        feature.isDeadEnd(agent, successor, features)
+        feature.pacmanDistance(agent, successor, features)
+        feature.disperse(agent, successor, features)
+        feature.feasts(agent, successor, features)
+        feature.foodDownPath(agent, gameState, successor, features)
+        #feature.futureScore(agent, successor, features)
+        feature.trapped(agent, successor, features)
 
         feature.scaredGhostDistance(agent, successor, features)
 

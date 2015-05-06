@@ -20,7 +20,11 @@ for more information on this.
 
 #offensive={'agentFoodDistance':-6.032787247064622,'capsuleDistance':-1.4289075858758298,'disperse':2.0644791877194746,'dontStop':-5880.612091187818,'feasts':-1192.269768413758,'foodDownPath':17.033664351999324,'ghostFoodDistance':5.995670599915416,'pacmanDistance':-10.215117832813965,'scaredGhostDistance':-3.7365262839402336,'score':279.78978646778586}
 
-offensive = {'score': 400.0, 'foodDistance': -25.0, 'agentFoodDistance': -5.0, 'ghostDistance': -100.0, 'capsuleDistance': -35.0}
+#offensive = {'score': 400.0, 'foodDistance': -25.0, 'agentFoodDistance': -5.0, 'ghostDistance': -100.0, 'capsuleDistance': -35.0, 'isDeadEnd': -1.0, 'pacmanDistance': -10.0, 'foodDownPath': 50.0}
+
+offensive={'agentFoodDistance':-15,'capsuleDistance':-35,'dontStop':-112.94736824992988,'foodDistance':-51.572125275369686,'foodDownPath':56.05662503083696,'ghostDistance':-112.96728182481604,'isDeadEnd':-1.0496411004577255,'pacmanDistance':-0,'score':807.6695891980605}
+
+#offensive={'agentFoodDistance':-3.9584351135128246,'capsuleDistance':-35,'ghostDistance':-100,'isDeadEnd':-1.0699359296657929,'score':470.27502615621813}
 
 #defensive = { 'score': 1.0 }
 defensive = {'pacmanDistance': -50.0, 'onDefense': 100.0, 'disperse': 0.0, 'dontReverse': -8.0, 'dontStop': -100, 'feasts': 0.0}
