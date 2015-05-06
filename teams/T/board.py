@@ -96,8 +96,8 @@ class Board:
             if v not in index:
                 strongconnect(v)
         
-        print self.components
-        print self.deadends
+#        print self.components
+#        print self.deadends
     
     def areAdjacent(self, p, q):
         "Tests if two different points are adjacent"

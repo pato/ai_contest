@@ -156,13 +156,13 @@ func trial(index int, oweights map[string]float64, dweights map[string]float64, 
 
 	stepstring := strconv.Itoa(NUM_STEPS)
 
-	mapstr := "contest03Capture"
+	mapstr := "contest01Capture"
 
 	scoreSum := 0.0
 
 	for i := 0; i < NUM_TRIALSPERSTRAND; i++ {
 		// Run the simulator
-		cmd := exec.Command("python2", "capture.py", "-r", "T", "-z", "0.5", "-i", stepstring, "-Q", "-k", "4", "-l", mapstr, "--redOpts", weightstring)
+		cmd := exec.Command("python2", "capture.py", "-r", "T", "-z", "0.4", "-i", stepstring, "-k", "4", "-l", mapstr, "--redOpts", weightstring)
 		stdout, err := cmd.StdoutPipe()
 		cmd.Stderr = os.Stderr
 		if err != nil {

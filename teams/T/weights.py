@@ -16,9 +16,11 @@ for more information on this.
 #offensive={'agentFoodDistance':-6.87394095697943,'capsuleDistance':-2.467449479493143,'disperse':2.9261564269030638,'dontStop':-4749.098161597775,'feasts':-929.5634579900826,'foodDownPath':31.460901533918186,'ghostFoodDistance':3.0,'scaredGhostDistance':-3.163579509953692,'score':272.2292467917253}
 
 # Offensive weights with depth 2
-offensive={'agentFoodDistance':-5.576814605286688,'capsuleDistance':-1.9564308978335214,'disperse':1.4294603446174103,'dontStop':-7836.8400114301585,'feasts':-1104.2610226938614,'foodDownPath':28.398833579293733,'ghostFoodDistance':3.572868589804594,'pacmanDistance':-7.439702045561852,'scaredGhostDistance':-3.8033646361869136,'futureScore':245.63663411308028,'score':100}
+#offensive={'agentFoodDistance':-5.576814605286688,'capsuleDistance':-1.9564308978335214,'disperse':1.4294603446174103,'dontStop':-7836.8400114301585,'feasts':-1104.2610226938614,'foodDownPath':28.398833579293733,'ghostFoodDistance':3.572868589804594,'pacmanDistance':-7.439702045561852,'scaredGhostDistance':-3.8033646361869136,'futureScore':245.63663411308028,'score':100}
 
 #offensive={'agentFoodDistance':-6.032787247064622,'capsuleDistance':-1.4289075858758298,'disperse':2.0644791877194746,'dontStop':-5880.612091187818,'feasts':-1192.269768413758,'foodDownPath':17.033664351999324,'ghostFoodDistance':5.995670599915416,'pacmanDistance':-10.215117832813965,'scaredGhostDistance':-3.7365262839402336,'score':279.78978646778586}
+
+offensive = {'score': 0.0, 'foodDistance': -20.0, 'ghostDistance': 20.0}
 
 #defensive = { 'score': 1.0 }
 defensive = {'pacmanDistance': -50.0, 'onDefense': 100.0, 'disperse': 0.0, 'dontReverse': -8.0, 'dontStop': -100, 'feasts': 0.0}
