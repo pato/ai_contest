@@ -272,7 +272,7 @@ def negamax(agent, gameState, depth, color=1, a=-float('inf'), b=float('inf')):
     gameState.data.agentStates[agent.index] = previous
     return max((y, x) for x, y in moves.items())
 
-def futureScore(agent, successor, features=util.Counter(), depth=12):
+def futureScore(agent, successor, features=util.Counter(), depth=4):
     features['futureScore'], _ = negamax(agent, successor, depth)
     return features
 
