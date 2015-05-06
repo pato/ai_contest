@@ -192,6 +192,17 @@ def feasts(agent, successor, features=util.Counter()):
     features['feasts'] = feasts
     return features
 
+def trapped(agent, successor, features=util.Counter()):
+    """
+    If agent is trapped
+    """
+    position = successor.getAgentPosition(agent.index)
+    dists = getGhostDistances(agent, successor, position)
+    walls = successor.getWalls()
+    legalNeighbors = lambda pos: game.Actions.getLegalNeighbors(pos, walls)
+    if len(dists) == 0: return
+    features['trapped'] = 1.0 if len(legalNeighbors(position)) == 2 and min(dists) == 1 else 0.0
+    return features
 
 def onDefense(agent, successor, features=util.Counter()):
     """
