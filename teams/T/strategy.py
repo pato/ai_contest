@@ -193,7 +193,7 @@ class ContestOffensive(Feature):
         feature.disperse(agent, successor, features)
         feature.feasts(agent, successor, features)
         feature.foodDownPath(agent, gameState, successor, features)
-        feature.futureScore(agent, successor, features)
+        #feature.futureScore(agent, successor, features)
 
         feature.capsuleDistance(agent, successor, features)
         feature.scaredGhostDistance(agent, successor, features)
